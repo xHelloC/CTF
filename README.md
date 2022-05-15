@@ -15,7 +15,7 @@
 &nbsp;
 
 >## **Admin command**:
->- /ctfadmin help
+>- ```/ctfadmin help```
 >- /ctfadmin mapedit
 >   - /ctfadmin mapedit %id of arena%
 >   - /ctfadmin mapedit add %name of arena%
