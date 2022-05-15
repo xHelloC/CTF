@@ -1,36 +1,182 @@
 options:
-    # server side options
-        try: "test"
-    # client side options
-    # vars
-    # to run funcs
-
-    # design
-
+# server side options
+    debug: 1
+    dt: "&8[&c*&8]&r"
+# client side options
+# vars
+# to run funcs
+# design
 
 on load:
-on unload:
+    clear {ctf::help::commands::*}, {ctf::help::commands[sub]::*}, {ctf::help::desc::*}
+    {ctf::help::commands::*} is not set:
+        add "help", "mapedit", "food", "items", "ores", "start", "tpall", "trun" and "stop" to {ctf::help::commands::*}
+        send "%{@dt}%&r Help Command already loaded!" to console
+        {ctf::help::commands[sub]::*} is not set:
+            add "id of arena", "add", "remove", "info" and "detail" to {ctf::help::commands[sub]::2::*}
+            add "id-[food/items/ores]" to {ctf::help::commands[sub]::3::*}, {ctf::help::commands[sub]::4::*}, {ctf::help::commands[sub]::5::*}
+            send "%{@dt}%&r Help Subcommand already loaded!" to console
 
+            {ctf::help::desc::*} is not set:
+                add "help", "mapedit", "food", "items", "ores", "start", "tpall", "trun" and "stop" to {ctf::help::desc::*}
+                send "%{@dt}%&r Help describ. already loaded!" to console
+                {ctf::help::desc[sub]::*} is not set: 
+                    add "id of arena", "add", "remove", "info" and "detail" to {ctf::help::desc[sub]::2::*}
+                    add "id-[food/items/ores]" to {ctf::help::desc[sub]::3::*}, {ctf::help::desc[sub]::4::*}, {ctf::help::desc[sub]::5::*}
+                    send "%{@dt}%&r Help Subdescrib. already loaded!" to console  
 
-function Menu():
+    #on unload:
+
+function IAmenu(s: sender, c: sender = "", value-1: string):
+    {_value-1} is "admin":
+        {@debug} = 1:
+            send "%{@dt}% &rAdmin IAmenu" to {_c}
+        
+    {_value-1} is "player":
+        {@debug} = 1:
+            send "%{@dt}% &rPlayer IaMenu" to {_c}
     
+
+
+
+command focusproduction:capturetheflagadmin [<string>]:
+    aliases: ctfadmin, cadmin
+    trigger:
+        IAmenu( player, console, "admin" )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 command focusproduction:capturetheflag [<string>] [<string>]:
     aliases: ctf
     trigger:
-        send "debug - Player"
-
-command focusproduction:capturetheflagadmin [<string>]:
-    aliases: ctfadmin, cadmin
-    trigger:
-        send "debug - Admin"   
-
-
-
-on command:
+        IAmenu( player, console, "player" )
 
 
 
 
-on chat:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
