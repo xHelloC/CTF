@@ -4,6 +4,7 @@
 <font face="Arial" size="6px" color="#1483de">Command description</font>
 
 >## **Player command**:
+```vb
 >- /ctf join [arena]'s
 >- /ctf leave %current-arenas%
 >- /ctf party [join | leave | invite] [player's | %name of team%]
@@ -11,24 +12,27 @@
 
 >- /ctf leaderboard
 >- /ctf points
+```
 
 &nbsp;
 
 >## **Admin command**:
->- ```/ctfadmin help```
+```vb
+>- /ctfadmin help
 >- /ctfadmin mapedit
 >   - /ctfadmin mapedit %id of arena%
 >   - /ctfadmin mapedit add %name of arena%
 >   - /ctfadmin mapedit remove %name of arena%
 >   - /ctfadmin mapedit info %id of arena%
 >   - /ctfadmin mapedit detail %id of arena%
-> &nbsp;
+
 >- /ctfadmin [food/items/ores] %id-[food/items/ores]%
 >- /ctfadmin start
 >- /ctfadmin tpall
 >- /ctfadmin stop
 
 >- /ctfadmin turn [on/off]
+```
 
 <font face="Arial" size="6px" color="#1483de">Description</font>
 
