@@ -1,0 +1,36 @@
+options:
+    # server side options
+        try: "test"
+    # client side options
+    # vars
+    # to run funcs
+
+    # design
+
+
+on load:
+on unload:
+
+
+function Menu():
+    
+
+
+command focusproduction:capturetheflag [<string>] [<string>]:
+    aliases: ctf
+    trigger:
+        send "debug - Player"
+
+command focusproduction:capturetheflagadmin [<string>]:
+    aliases: ctfadmin, cadmin
+    trigger:
+        send "debug - Admin"   
+
+
+
+on command:
+
+
+
+
+on chat:
