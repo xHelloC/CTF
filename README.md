@@ -4,7 +4,7 @@
 <font face="Arial" size="6px" color="#1483de">Command description</font>
 
 >## **Player command**:
-```hs
+```css
 >- /ctf join [arena]'s
 >- /ctf leave %current-arenas%
 >- /ctf party [join | leave | invite] [player's | %name of team%]
@@ -17,7 +17,7 @@
 &nbsp;
 
 >## **Admin command**:
-```hs
+```css
 >- /ctfadmin help
 >- /ctfadmin mapedit
 >   - /ctfadmin mapedit %id of arena%
