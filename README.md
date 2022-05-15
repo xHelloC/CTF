@@ -43,14 +43,14 @@ each team has its own flag which the other team must capture and place on its te
 
 > Phases:
 >- 1. 
->   - 0:30 - 3:30 min
->       - Players will have to mine ores but only (Cooper/Iron/Gold) and pvp will still be off and the barrier will always be set to [%V-30(percent) of spawn location of team%] 
+>   - >0:30 - 3:30 min
+>       - >Players will have to mine ores but only (Cooper/Iron/Gold) and pvp will still be off and the barrier will always be set to [%V-30(percent) of spawn location of team%] 
 >- 2. 
->   - 3:30 - 7:00 min
->       - Players will still have to mine ores but will now also gain access to diamonds and emeralds which will always be set to [%V-85(percent) of spawn location of team%] and pvp is still disabled
+>   - >3:30 - 7:00 min
+>       - > Players will still have to mine ores but will now also gain access to diamonds and emeralds which will always be set to [%V-85(percent) of spawn location of team%] and pvp is still disabled
 >- 3.
->   - 7:00 - 10:00
->       - Now pvp is turned on and the toy can attack the other team and attempt to capture their flag. 
+>   - >7:00 - 10:00
+>       - >Now pvp is turned on and the toy can attack the other team and attempt to capture their flag. 
 
 > Max score is **7 points per team**
 
