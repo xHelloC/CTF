@@ -4,7 +4,7 @@ options:
     dt: "&8[&c*&8]&r"
     tag: "&b &lCTF &r"
     title: send titleCenter( "&e.ιl&blιl&2lι. &r&lCapture the &3Flag &e.ιl&blιl&2lι.")
-    back:   send formatted "<cmd:/%{_back}%>&8&l[ &e≺&8&l ]" to {_s}
+    back:   send formatted "<ttp:&cBack><cmd:/%{_back}%>&8&l[ &e≺&8&l ]" to {_s}
     status: "&cDisabled"
 # client side options
 # vars
@@ -15,6 +15,7 @@ function ws(s: sender):
     send "" to {_s}
 
 on load:
+    #
     {ctf::help::commands::*} is not set:
         add "mapedit", "&efood&7/&eitems&7/&eores", "start", "stop" and "tpall" to {ctf::help::commands::*}
         send "%{@dt}%&r Help Command already loaded!" to console if {@debug} = 1
@@ -29,11 +30,83 @@ on load:
 on unload:
     clear {ctf::help::commands::*}, {ctf::help::commands[sub]::*}, {ctf::help::desc::*}
 
+function canAddInstance(list: objects, search: object) :: boolean:
+    if {_search} is not set:
+        return false
+    loop {_list::*}:
+        if loop-value is {_search}:
+            return false
+    return true
+
 function ClearChat(s: sender):
     loop 100 times:
         send "" to {_s}
 
-function IAmenu(s: sender, c: sender = "", value-1: string, value-2: string=""):
+
+function addInstance(s: sender, list: object, newInstance: string):
+    set {_rtn} to canAddInstance({ctf::%{_list}%::*}, {_newInstance})
+    send "%{_rtn}%" to {_s}
+    {_rtn} is true:
+        add {_newInstance} to {ctf::%{_list}%::*}
+        set {_n} to size of {ctf::%{_list}%::*}
+    send "%{_n}%" to {_s}
+
+
+function removeInstance(s: sender, list: object, removeInstance: string):
+    canAddInstance({ctf::%{_list}%::*}, {_removeInstance}) is false:
+        set {_rtn} to true
+    else:
+        set {_rtn} to false
+
+    broadcast {_rtn}
+    {_rtn} is true:
+        remove {_removeInstance} from {ctf::%{_list}%::*}
+
+function listInstance(s: sender, list: string):
+    ws( {_s} )
+    ClearChat( {_s} )
+    {@title} to {_s}
+    send centeredText( "&8&l( &o&eList of instance's &8&l)", 154 ) to {_s}
+    ws( {_s} )
+    {ctf::%{_list}%::*} is not set:
+        send "&8&l» &7There are nothing to see! &cNo Instance's" to {_s}
+    else:
+        loop {ctf::%{_list}%::*}:
+            send formatted "&8&l» <ttp:&7Click for get information about &binstance id &a%loop-index%><cmd:/ctfadmin mapedit %loop-index%>[&a • &8]&r  &7&o%loop-value%" to {_s}
+    ws( {_s} )
+    ws( {_s} )
+    set {_back} to "ctfadmin mapedit"
+    {@back}
+
+function listInstanceInformation(s: sender, list: string, id: integer) :: boolean:
+    loop {ctf::%{_list}%::*}:
+        if {_id} = (loop-index parsed as integer):
+            set {_newid} to loop-value
+            send "%loop-value% as %loop-index%" to {_s}
+            ws( {_s} )
+            ClearChat( {_s} )
+            {@title} to {_s}
+            send centeredText( "&8&l( &o&eInstance %{_newid}% &8&l)", 154 ) to {_s}
+            ws( {_s} )
+            {ctf::%{_list}%::%{_id}%::data::*} is not set:
+                send "&8&l» &cUpss! &7There are &cnot&7 any data!" to {_s}
+            ws( {_s} )
+            stop loop
+        else:
+            ws( {_s} )
+            ClearChat( {_s} )
+            {@title} to {_s}
+            ws( {_s} )
+            send "&8&l» &cUpss! &7this instance of id &c%{_id}%&7 not exist!" to {_s}
+            ws( {_s} ) 
+            stop loop
+            return false
+    set {_back} to "ctfadmin mapedit list"
+    {@back}
+
+
+
+function IAmenu(s: sender, c: sender = "", value-1: string, value-2: string="", value-3: object="none", value-4: string):
     {_value-1} is "admin":
         {_value-2} is not set:
             ClearChat( {_s} )
@@ -54,15 +127,44 @@ function IAmenu(s: sender, c: sender = "", value-1: string, value-2: string=""):
             set {_back} to "ctfadmin"
             {@back}
         else if {_value-2} is "mapedit" or "editmap":
-            send "%{@dt}%&r Mapedit-Admin-IaMenu" to {_c} if {@debug} = 1
-            ClearChat( {_s} )
-            {@title} to {_s}
-            send centeredText( "&8&l( &o&eMapedit &8&l)", 154 ) to {_s}
-            ws( {_s} )
-            # data here
-            ws( {_s} )
-            set {_back} to "ctfadmin"
-            {@back}
+            {_value-3} is not set:
+                send "%{@dt}%&r Mapedit-Admin-IaMenu" to {_c} if {@debug} = 1
+                ClearChat( {_s} )
+                {@title} to {_s}
+                send centeredText( "&8&l( &o&eMapedit &8&l)", 154 ) to {_s}
+                ws( {_s} )
+                send formatted "<ttp:&6List&7 of instance's><cmd:/ctfadmin mapedit list>&8&l» &eMap List" to {_s} 
+                send formatted "<ttp:&aCreate&7 new instance of map><cmd:/.>&8&l» &eAdd Map" to {_s} 
+                send formatted "<ttp:&7Map &binformation><cmd:/.>&8&l» &eMap info" to {_s} 
+                send formatted "<ttp:&7Map &eDetail><cmd:/.>&8&l» &eMap detail" to {_s} 
+                ws( {_s} )
+                set {_back} to "ctfadmin"
+                {@back}
+            else if {_value-3} is "add":
+                send "&8&lLOGIC&7 for add" to {_s}
+                addInstance( {_s}, "instance", {_value-4} )
+
+            else if {_value-3} is "remove":
+                send "&8&lLOGIC&7 for remove" to {_s}
+                removeInstance( {_s}, "instance", {_value-4} )
+
+            else if {_value-3} is "list":
+                send "&8&lLOGIC&7 for list" to {_s}
+                listInstance( {_s} , "instance")
+
+            else if {_value-3} is "detail":
+                send "&8&lLOGIC&7 for detail" to {_s}
+
+            else if ({_value-3} parsed as integer) is integer:
+                send "&8&lLOGIC&7 for Intereger - List" to {_s}
+                listInstanceInformation( {_s}, "instance", ({_value-3} parsed as integer) )
+
+            else:
+                send "%{@tag}% &cUncorrect usage!&7 Use &e/ctfadmin ?" to {_s} 
+
+
+
+
         else if {_value-2} is "items" or "food" or "ores":
             send "%{@dt}%&r Environments&7(&a%{_value-2}%&7)-Admin-IaMenu" to {_c} if {@debug} = 1
             ClearChat( {_s} )
@@ -94,7 +196,8 @@ function IAmenu(s: sender, c: sender = "", value-1: string, value-2: string=""):
             set {_back} to "ctfadmin"
             {@back}
         else:
-            send "%{@tag}% &cUncorrect usage!&7 Use &e/ctfadmin ?" to {_s}            
+            {_value-3} is not set:
+                send "%{@tag}% &cUncorrect usage!&7 Use &e/ctfadmin ?" to {_s}            
 
 
         
@@ -107,10 +210,10 @@ function IAmenu(s: sender, c: sender = "", value-1: string, value-2: string=""):
 
 
 
-command focusproduction:capturetheflagadmin [<string>]:
+command focusproduction:capturetheflagadmin [<string>] [<text>] [<string>]:
     aliases: ctfadmin, cadmin
     trigger:
-        IAmenu( player, console, "admin", arg-1 )
+        IAmenu( player, console, "admin", arg-1, arg-2, arg-3 )
 
 
 
@@ -202,7 +305,7 @@ command focusproduction:capturetheflagadmin [<string>]:
 command focusproduction:capturetheflag [<string>] [<string>]:
     aliases: ctf
     trigger:
-        IAmenu( player, console, "player" )
+        #IAmenu( player, console, "player" )
 
 
 
