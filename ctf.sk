@@ -9,13 +9,49 @@ options:
 # client side options
 # vars
 # to run funcs
+    status[ttp]: "&eClick&7 for choose this status"
+    status[Running]: <ttp:%{_ttp}%><cmd:/1100111>
+    status[No-Running]: <ttp:%{_ttp}%><cmd:/1100112>
+    status[Preparing]: <ttp:%{_ttp}%><cmd:/1100113>
+    status[Deactived]: <ttp:%{_ttp}%><cmd:/1100114>
 # design
+
+
+on command:
+    command = "1100111":
+        cancel event
+        statusType(sender, 1)
+    else if command = "1100112":
+        cancel event
+        statusType(sender, 2)
+    else if command = "1100113":
+        cancel event
+        statusType(sender, 3)
+    else if command = "1100114":
+        cancel event
+        statusType(sender, 4)
+
+
+function statusType(s: sender, type: integer = 1):
+    {_type} is 1:
+        make {_s} say "&aRunning"
+    else if {_type} is 2:
+        make {_s} say "&cNo-Running"
+    else if {_type} is 3:
+        make {_s} say "&6Preparing"
+    else if {_type} is 4:
+        make {_s} say "&4Deactived"
+    else:
+        make {_s} say "&4Deactived"
+
+
+
 
 function ws(s: sender):
     send "" to {_s}
 
 on load:
-    #
+    #delete {ctf::instance::*}
     {ctf::help::commands::*} is not set:
         add "mapedit", "&efood&7/&eitems&7/&eores", "start", "stop" and "tpall" to {ctf::help::commands::*}
         send "%{@dt}%&r Help Command already loaded!" to console if {@debug} = 1
@@ -43,13 +79,63 @@ function ClearChat(s: sender):
         send "" to {_s}
 
 
-function addInstance(s: sender, list: object, newInstance: string):
-    set {_rtn} to canAddInstance({ctf::%{_list}%::*}, {_newInstance})
-    send "%{_rtn}%" to {_s}
-    {_rtn} is true:
-        add {_newInstance} to {ctf::%{_list}%::*}
-        set {_n} to size of {ctf::%{_list}%::*}
-    send "%{_n}%" to {_s}
+function addInstance(s: sender, list: object, c: sender):
+    set {count::i} to 0
+    set {rsp} to "none"
+    ClearChat( {_s} )
+    send centeredText( "&7&lInsert the &ename&7 of Instance", 154 ) to {_s}
+    ws( {_s} )
+    ws( {_s} )
+    {onChat::%{_s}'s uuid%} is "deactived":
+        delete {response::%{_s}'s uuid%::messages::*}
+        set {onChat::%{_s}'s uuid%} to "active"
+        while {onChat::%{_s}'s uuid%} is "active":
+            wait 15 ticks
+            set {_k} to size of {response::%{_s}'s uuid%::messages::*}
+            send {_k} to {_c}
+            if {rsp} is "exist":
+                set {onChat::%{_s}'s uuid%} to "deactived"
+                stop
+            if {_k} < 2:
+                set {onChat::%{_s}'s uuid%} to "active"
+            {_k} = 1:
+                {count::i} = 0:
+                    send "%{@dt}% Registred &r" to {_c} if {@debug} = 1
+                    add 1 to {count::i}
+                    set {_rtn} to canAddInstance({ctf::%{_list}%::*}, {response::%{_s}'s uuid%::messages::1})
+                    {_rtn} is true:
+                        set {_ttp} to {@status[ttp]}
+                        add {response::%{_s}'s uuid%::messages::1} to {ctf::%{_list}%::*}
+                        set {_n} to size of {ctf::%{_list}%::*}
+                        set {ctf::%{_list}%::%{_n}%::data::name} to {response::%{_s}'s uuid%::messages::1}
+                        ClearChat( {_s} )
+                        send centeredText( "&7&lInsert the &ename&7 of Instance", 154 ) to {_s}
+                        ws( {_s} )
+                        send centeredText( "&8&l[[ &e%{ctf::%{_list}%::%{_n}%::data::name}% &8&l]]", 144 ) to {_s}
+                        ws( {_s} )
+                        wait 10 ticks
+                        ws( {_s} )
+                        send centeredText( "&7&lChoose &eStatus&7 for that Instance", 154 ) to {_s}
+                        ws( {_s} )
+                        send formatted "    {@status[Running]}&8&l[&a Running &8&l]&r {@status[No-Running]}&8&l[&c No-Running &8&l]&r {@status[Preparing]}&8&l[&6 Preparing &8&l]&r {@status[Deactived]}&8&l[&4 Deactived &8&l]&r" to {_s}
+                        ws( {_s} )
+                    else:
+                        ClearChat( {_s} )
+                        send centeredText( "&7&lInsert the &ename&7 of Instance", 154 ) to {_s}
+                        set {_error} to "&cOpps!&7 This name &c%{response::%{_s}'s uuid%::messages::1}% &7of Instance is currently used"
+                        send centeredText( {_error}, 154 ) to {_s}
+                        ws( {_s} )
+                        ws( {_s} )
+                        set {rsp} to "exist"
+            {_k} = 2:
+                send "%{@dt}%&r Status" to {_c} if {@debug} = 1
+                set {ctf::%{_list}%::%{_n}%::data::status} to {response::%{_s}'s uuid%::messages::2}
+   
+  
+            
+
+
+
 
 
 function removeInstance(s: sender, list: object, removeInstance: string):
@@ -80,9 +166,8 @@ function listInstance(s: sender, list: string):
 
 function listInstanceInformation(s: sender, list: string, id: integer) :: boolean:
     loop {ctf::%{_list}%::*}:
-        if {_id} = (loop-index parsed as integer):
+        {_id} = (loop-index parsed as integer):
             set {_newid} to loop-value
-            send "%loop-value% as %loop-index%" to {_s}
             ws( {_s} )
             ClearChat( {_s} )
             {@title} to {_s}
@@ -90,17 +175,9 @@ function listInstanceInformation(s: sender, list: string, id: integer) :: boolea
             ws( {_s} )
             {ctf::%{_list}%::%{_id}%::data::*} is not set:
                 send "&8&l» &cUpss! &7There are &cnot&7 any data!" to {_s}
+            else:
+                send "%{ctf::%{_list}%::%{_id}%::data::*}%" to {_s}
             ws( {_s} )
-            stop loop
-        else:
-            ws( {_s} )
-            ClearChat( {_s} )
-            {@title} to {_s}
-            ws( {_s} )
-            send "&8&l» &cUpss! &7this instance of id &c%{_id}%&7 not exist!" to {_s}
-            ws( {_s} ) 
-            stop loop
-            return false
     set {_back} to "ctfadmin mapedit list"
     {@back}
 
@@ -112,6 +189,11 @@ function IAmenu(s: sender, c: sender = "", value-1: string, value-2: string="", 
             ClearChat( {_s} )
             {@title} to {_s}
             send centeredText( "&8&l( &o&eStatus : %{@status}% &8&l)", 154 ) to {_s}
+            ws( {_s} )
+            send formatted "<ttp:&6Help&7 all command's of skript><cmd:/ctfadmin help>&8&l» &eHelp" to {_s} 
+            send formatted "<ttp:&aMapedit&7 Edit whole isntances><cmd:/ctfadmin mapedit>&8&l» &eMapedit" to {_s} 
+            send formatted "<ttp:&7Map &7All &aEnvironments&7 for Food/items/ore><cmd:/.>&8&l» &eEnvironments" to {_s} 
+            send formatted "<ttp:&7Setting><cmd:/.>&8&l» &cSetting" to {_s} 
             ws( {_s} )
             {@debug} = 1:
                 send "%{@dt}% &rAdmin IAmenu" to {_c}
@@ -142,7 +224,7 @@ function IAmenu(s: sender, c: sender = "", value-1: string, value-2: string="", 
                 {@back}
             else if {_value-3} is "add":
                 send "&8&lLOGIC&7 for add" to {_s}
-                addInstance( {_s}, "instance", {_value-4} )
+                addInstance( {_s}, "instance", {_c})
 
             else if {_value-3} is "remove":
                 send "&8&lLOGIC&7 for remove" to {_s}
@@ -156,7 +238,6 @@ function IAmenu(s: sender, c: sender = "", value-1: string, value-2: string="", 
                 send "&8&lLOGIC&7 for detail" to {_s}
 
             else if ({_value-3} parsed as integer) is integer:
-                send "&8&lLOGIC&7 for Intereger - List" to {_s}
                 listInstanceInformation( {_s}, "instance", ({_value-3} parsed as integer) )
 
             else:
@@ -216,8 +297,24 @@ command focusproduction:capturetheflagadmin [<string>] [<text>] [<string>]:
         IAmenu( player, console, "admin", arg-1, arg-2, arg-3 )
 
 
+command 222 [<string>]:
+    trigger:
+        if arg-1 is "reset":
+            delete {ctf::instance::*}
+        loop {ctf::instance::*}:
+            send "%loop-index% as %loop-value%"
+
+# every 1 second:
+#     loop all players:
+#         broadcast "%loop-player% as %{onChat::%loop-player's uuid%}%"
 
 
+on Chat:
+    {onChat::%sender's uuid%} is "active":
+        set {_s} to sender
+        cancel event
+        add message to {response::%{_s}'s uuid%::messages::*}
+        set {onChat::%{_s}'s uuid%} to "deactived"
 
 
 
