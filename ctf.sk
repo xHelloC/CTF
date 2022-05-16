@@ -2,47 +2,115 @@ options:
 # server side options
     debug: 1
     dt: "&8[&c*&8]&r"
+    tag: "&b &lCTF &r"
+    title: send titleCenter( "&e.ιl&blιl&2lι. &r&lCapture the &3Flag &e.ιl&blιl&2lι.")
+    back:   send formatted "<cmd:/%{_back}%>&8&l[ &e≺&8&l ]" to {_s}
+    status: "&cDisabled"
 # client side options
 # vars
 # to run funcs
 # design
 
+function ws(s: sender):
+    send "" to {_s}
+
 on load:
-    clear {ctf::help::commands::*}, {ctf::help::commands[sub]::*}, {ctf::help::desc::*}
     {ctf::help::commands::*} is not set:
-        add "help", "mapedit", "food", "items", "ores", "start", "tpall", "trun" and "stop" to {ctf::help::commands::*}
-        send "%{@dt}%&r Help Command already loaded!" to console
+        add "mapedit", "&efood&7/&eitems&7/&eores", "start", "stop" and "tpall" to {ctf::help::commands::*}
+        send "%{@dt}%&r Help Command already loaded!" to console if {@debug} = 1
         {ctf::help::commands[sub]::*} is not set:
-            add "id of arena", "add", "remove", "info" and "detail" to {ctf::help::commands[sub]::2::*}
-            add "id-[food/items/ores]" to {ctf::help::commands[sub]::3::*}, {ctf::help::commands[sub]::4::*}, {ctf::help::commands[sub]::5::*}
-            send "%{@dt}%&r Help Subcommand already loaded!" to console
+            add "%{@tag}%- Functions%nl% &8» &7id of arena%nl%", "&8» &7add%nl%", "&8» &7remove%nl%", "&8» &7info%nl%" and "&8» &7detail%nl%" to {ctf::help::commands[sub]::2::*}
+            add "%{@tag}%- Functions%nl% %nl%&8» &7id of [food/items/ores]" to {ctf::help::commands[sub]::3::*}
+            send "%{@dt}%&r Help Subcommand already loaded!" to console if {@debug} = 1
 
             {ctf::help::desc::*} is not set:
-                add "help", "mapedit", "food", "items", "ores", "start", "tpall", "trun" and "stop" to {ctf::help::desc::*}
-                send "%{@dt}%&r Help describ. already loaded!" to console
-                {ctf::help::desc[sub]::*} is not set: 
-                    add "id of arena", "add", "remove", "info" and "detail" to {ctf::help::desc[sub]::2::*}
-                    add "id-[food/items/ores]" to {ctf::help::desc[sub]::3::*}, {ctf::help::desc[sub]::4::*}, {ctf::help::desc[sub]::5::*}
-                    send "%{@dt}%&r Help Subdescrib. already loaded!" to console  
+                add "<ttp:%{ctf::help::commands[sub]::2::*}%>This command contains with &f&oFunctions&7 of map edit<reset>", "<ttp:%{ctf::help::commands[sub]::3::*}%>This command contains with &fsetting for&7 Environments<reset>", "Will &fStart the event&7 and prepare for run.", "Will &fStop the event&7 and remove a data", "Will &fTeleport&7 all players with &fenabledTP&7.." to {ctf::help::desc::*}
 
-    #on unload:
+on unload:
+    clear {ctf::help::commands::*}, {ctf::help::commands[sub]::*}, {ctf::help::desc::*}
 
-function IAmenu(s: sender, c: sender = "", value-1: string):
+function ClearChat(s: sender):
+    loop 100 times:
+        send "" to {_s}
+
+function IAmenu(s: sender, c: sender = "", value-1: string, value-2: string=""):
     {_value-1} is "admin":
-        {@debug} = 1:
-            send "%{@dt}% &rAdmin IAmenu" to {_c}
+        {_value-2} is not set:
+            ClearChat( {_s} )
+            {@title} to {_s}
+            send centeredText( "&8&l( &o&eStatus : %{@status}% &8&l)", 154 ) to {_s}
+            ws( {_s} )
+            {@debug} = 1:
+                send "%{@dt}% &rAdmin IAmenu" to {_c}
+        else if {_value-2} is "help" or "?" or "??":
+            send "%{@dt}%&r Help-Admin-IAmenu" to {_c} if {@debug} = 1
+            ClearChat( {_s} )
+            {@title} to {_s}
+            send centeredText( "&8&l( &o&eHelp &8&l)", 154 ) to {_s}
+            ws( {_s} )
+            loop {ctf::help::commands::*}:
+                send formatted "&8&l»  &o&e%loop-value%&7 - %{ctf::help::desc::%loop-index%}%" to {_s}
+            ws( {_s} )
+            set {_back} to "ctfadmin"
+            {@back}
+        else if {_value-2} is "mapedit" or "editmap":
+            send "%{@dt}%&r Mapedit-Admin-IaMenu" to {_c} if {@debug} = 1
+            ClearChat( {_s} )
+            {@title} to {_s}
+            send centeredText( "&8&l( &o&eMapedit &8&l)", 154 ) to {_s}
+            ws( {_s} )
+            # data here
+            ws( {_s} )
+            set {_back} to "ctfadmin"
+            {@back}
+        else if {_value-2} is "items" or "food" or "ores":
+            send "%{@dt}%&r Environments&7(&a%{_value-2}%&7)-Admin-IaMenu" to {_c} if {@debug} = 1
+            ClearChat( {_s} )
+            {@title} to {_s}
+            send centeredText( "&8&l( &o&eEnvironments&7(&a%{_value-2}%&7) &8&l)", 154 ) to {_s}
+            ws( {_s} )
+            # data here
+            ws( {_s} )
+            set {_back} to "ctfadmin"
+            {@back}
+        else if {_value-2} is "start" or "stop" or "turn":
+            send "%{@dt}%&r Controll&7 - (&a%{_value-2}%&7)-Admin-IaMenu" to {_c} if {@debug} = 1
+            ClearChat( {_s} )
+            {@title} to {_s}
+            send centeredText( "&8&l( &o&eControll&7 - (&a%{_value-2}%&7) &8&l)", 154 ) to {_s}
+            ws( {_s} )
+            # data here
+            ws( {_s} )
+            set {_back} to "ctfadmin"
+            {@back}      
+        else if {_value-2} is "tpall":
+            send "%{@dt}%&r Teleport-Admin-IaMenu" to {_c} if {@debug} = 1
+            ClearChat( {_s} )
+            {@title} to {_s}
+            send centeredText( "&8&l( &o&eTeleport &8&l)", 154 ) to {_s}
+            ws( {_s} )
+            # data here
+            ws( {_s} )
+            set {_back} to "ctfadmin"
+            {@back}
+        else:
+            send "%{@tag}% &cUncorrect usage!&7 Use &e/ctfadmin ?" to {_s}            
+
+
         
-    {_value-1} is "player":
+    else if {_value-1} is "player":
         {@debug} = 1:
             send "%{@dt}% &rPlayer IaMenu" to {_c}
     
+    else:
+        send "%{@tag}% &cUncorrect usage!" to {_s}
 
 
 
 command focusproduction:capturetheflagadmin [<string>]:
     aliases: ctfadmin, cadmin
     trigger:
-        IAmenu( player, console, "admin" )
+        IAmenu( player, console, "admin", arg-1 )
 
 
 
