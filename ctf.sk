@@ -5,6 +5,7 @@ options:
     tag: "&b &lCTF &r"
     title: send titleCenter( "&e.ιl&blιl&2lι. &r&lCapture the &3Flag &e.ιl&blιl&2lι.")
     back:   send formatted "<ttp:&cBack><cmd:/%{_back}%>&8&l[ &e≺&8&l ]" to {_s}
+    footer_list: send formatted "<ttp:&cBack><cmd:/%{_back}%>&8&l[ &e≺&8&l ]<reset> <ttp:&aTeleport><cmd:/%{_teleport}%>&8&l[ &a●&8&l ]<reset> <ttp:&cRemove><cmd:/%{_remove}%>&8&l[ &c✖&8&l ]" to {_s}
     status: "&cDisabled"
     ExpectedResponses: 3
 # client side options
@@ -120,6 +121,15 @@ function ClearChat(s: sender):
     loop 100 times:
         send "" to {_s}
 
+function getLocation(s: sender):
+    delete {loc::*}
+    set {loc::[x]} to {_s}'s x-coords
+    set {loc::[y]} to {_s}'s y-coords
+    set {loc::[z]} to {_s}'s z-coords
+    set {loc::[yaw]} to {_s}'s yaw
+    set {loc::[pitch]} to {_s}'s pitch
+    set {loc::[world]} to {_s}'s world
+    set {loc::[biome]} to {_s}'s biome
 
 function addInstance(s: sender, list: object, c: sender):
     set {count::i} to 0
@@ -187,11 +197,66 @@ function addInstance(s: sender, list: object, c: sender):
                 wait 1 seconds
                 ClearChat( {_s} )
                 send centeredText( "&7&lInstance &e%{response::%{_s}'s uuid%::messages::1}%&7 with status %{response::%{_s}'s uuid%::messages::2}%&7 was &aCreated!", 169 ) to {_s}
-                broadcast {response::%{_s}'s uuid%::messages::3}
-                loop {ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::*}:
-                    broadcast "%loop-index% as %loop-value%"
+                send "%{@dt}% %{response::%{_s}'s uuid%::messages::3}%" to {_c} if {@debug} = 1
+                {@debug} = 1:
+                    loop {ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::*}:
+                        send "%{@dt}% %loop-index% as %loop-value%" to {_c}
                 ws( {_s} )
                 ws( {_s} )
+                getLocation( {_s} )
+                set {ctf::%{_list}%::%{_n}%::data::players::max} to {ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::players}
+                # L1
+                set {ctf::%{_list}%::%{_n}%::data::locations[1]::x} to ({loc::[x]} + {ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::x})  
+                set {ctf::%{_list}%::%{_n}%::data::locations[1]::y} to {loc::[y]}
+                set {ctf::%{_list}%::%{_n}%::data::locations[1]::z} to ({loc::[z]} -  {ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::z})
+                # Center
+                set {ctf::%{_list}%::%{_n}%::data::locations[C]::x} to {loc::[x]} 
+                set {ctf::%{_list}%::%{_n}%::data::locations[C]::y} to ((55 * {ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::z} / 100) + {loc::[y]})
+                set {ctf::%{_list}%::%{_n}%::data::locations[C]::z} to {loc::[z]}                
+                set {ctf::%{_list}%::%{_n}%::data::locations[C]::yaw} to {loc::[yaw]}
+                set {ctf::%{_list}%::%{_n}%::data::locations[C]::pitch} to {loc::[pitch]} 
+                # L2
+                set {ctf::%{_list}%::%{_n}%::data::locations[2]::x} to ({loc::[x]} - {ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::x})  
+                set {ctf::%{_list}%::%{_n}%::data::locations[2]::y} to ({loc::[y]} + {ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::y} + 5)
+                set {ctf::%{_list}%::%{_n}%::data::locations[2]::z} to ({loc::[z]} +  {ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::z}) 
+                if {@debug} = 1:
+                    set {_tempBlock1} to red wool #1
+                    set {_tempBlock2} to blue wool #2
+                    set {_tempBlock3} to lime wool #3
+                    set {_tempBlock4} to purple wool #4
+                    set {_tempBlock} to bedrock
+                else:
+                    set {_tempBlock1} to bedrock
+                    set {_tempBlock2} to bedrock
+                    set {_tempBlock3} to bedrock
+                    set {_tempBlock4} to bedrock 
+                    set {_tempBlock} to bedrock      
+                add "%nl%%nl%&cPvP &8[&coff&8]&0" to {ctf::%{_list}%::%{_n}%::data::flags::*}
+                add "%nl%&7Destroy &8[&aon&8]&0" to {ctf::%{_list}%::%{_n}%::data::flags::*}
+                add "%nl%&7Building &8[&coff&8]&0" to {ctf::%{_list}%::%{_n}%::data::flags::*}
+                add "%nl%&7Teleport &8[&aon&8]&0%nl%" to {ctf::%{_list}%::%{_n}%::data::flags::*}
+                set {ctf::%{_list}%::%{_n}%::data::players::current} to 0          
+                make {_s} execute command "/ctfadmin mapedit %{_n}%"
+                send "%{@dt}%&r The flor Building..." to {_c} if {@debug} = 1
+                set {_world} to {loc::[world]}
+                set {_l1} to location({ctf::%{_list}%::%{_n}%::data::locations[1]::x}, {loc::[y]}, {ctf::%{_list}%::%{_n}%::data::locations[1]::z}, {_world})
+                set {_l2} to location({ctf::%{_list}%::%{_n}%::data::locations[2]::x}, {loc::[y]}, {ctf::%{_list}%::%{_n}%::data::locations[2]::z}, {_world})
+                set all blocks within block at {_l1} and block at {_l2} to {_tempBlock}
+                send "%{@dt}%&r The wall (1) RED" to {_c} if {@debug} = 1
+                set all blocks within block at {_l1} and block at location({ctf::%{_list}%::%{_n}%::data::locations[2]::x}, {ctf::%{_list}%::%{_n}%::data::locations[C]::y}, {ctf::%{_list}%::%{_n}%::data::locations[1]::z}, {_world}) to {_tempBlock1} # red wool
+                send "%{@dt}%&r The wall (2) BLUE" to {_c} if {@debug} = 1
+                set all blocks within block at {_l1} and block at location({ctf::%{_list}%::%{_n}%::data::locations[1]::x}, {ctf::%{_list}%::%{_n}%::data::locations[C]::y}, {ctf::%{_list}%::%{_n}%::data::locations[2]::z}, {_world}) to {_tempBlock2} # blue wool
+                send "%{@dt}%&r The wall (3) LIME" to {_c} if {@debug} = 1
+                set all blocks within block at location({ctf::%{_list}%::%{_n}%::data::locations[1]::x}, {loc::[y]}, {ctf::%{_list}%::%{_n}%::data::locations[1]::z} + ({ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::z} * 2), {_world}) and block at location({ctf::%{_list}%::%{_n}%::data::locations[2]::x}, {ctf::%{_list}%::%{_n}%::data::locations[C]::y}, {ctf::%{_list}%::%{_n}%::data::locations[2]::z} , {_world}) to {_tempBlock3} # lime wool
+                send "%{@dt}%&r The wall (4) PURPLE" to {_c} if {@debug} = 1
+                set all blocks within block at location({ctf::%{_list}%::%{_n}%::data::locations[1]::x} - ({ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::x} * 2), {loc::[y]}, {ctf::%{_list}%::%{_n}%::data::locations[1]::z},{_world}) and block at location({ctf::%{_list}%::%{_n}%::data::locations[1]::x} - ({ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::x} * 2), {ctf::%{_list}%::%{_n}%::data::locations[C]::y}, {ctf::%{_list}%::%{_n}%::data::locations[2]::z}, {_world}) to {_tempBlock4} # purple wool 
+                # Fill -Size 1X-E | y | 1Z+E / 2X+E | Ywall | 2Z-E
+                # +Size 1X+E | y | 1Z-E / 2X-E | Ywall | 2Z+E
+                set {_lC} to location({loc::[x]}, {ctf::%{_list}%::%{_n}%::data::locations[C]::y}, {loc::[z]}, {_world})
+                set all blocks within block at location(({ctf::%{_list}%::%{_n}%::data::locations[1]::x} - 1), {loc::[y]}, ({ctf::%{_list}%::%{_n}%::data::locations[1]::z} + 1), {_world}) and block at location(({ctf::%{_list}%::%{_n}%::data::locations[2]::x} + 1), {ctf::%{_list}%::%{_n}%::data::locations[C]::y}, ({ctf::%{_list}%::%{_n}%::data::locations[2]::z} - 1), {_world}) to dirt
+                set block at {_lC} to gold block
+                teleport {_s} to location({loc::[x]}, ({ctf::%{_list}%::%{_n}%::data::locations[C]::y} + 2), {loc::[z]}, {_world})
+
 
 
 
@@ -240,10 +305,23 @@ function listInstanceInformation(s: sender, list: string, id: integer) :: boolea
             {ctf::%{_list}%::%{_id}%::data::*} is not set:
                 send "&8&l» &cUpss! &7There are &cnot&7 any data!" to {_s}
             else:
-                send "%{ctf::%{_list}%::%{_id}%::data::*}%" to {_s}
+                {ctf::%{_list}%::%{_id}%::data::name} is set:
+                    send "&l&6 » &r Name: &e%{ctf::%{_list}%::%{_id}%::data::name}%" to {_s}
+                    ws( {_s} )
+                    send "&l&6 » &r Players: &a%{ctf::%{_list}%::%{_id}%::data::players::current}%&8/&6%{ctf::%{_list}%::%{_id}%::data::players::max}%" to {_s}
+                    ws( {_s} )
+                    send "&l&6 » &r Status: %{ctf::%{_list}%::%{_id}%::data::status}%" to {_s}
+                {ctf::%{_list}%::%{_id}%::data::locations[1]::*} is set:
+                    send formatted "&l&6 » &r Cords: <ttp:&bX: &r%{ctf::%{_list}%::%{_id}%::data::locations[1]::x}% | &bY: &r%{ctf::%{_list}%::%{_id}%::data::locations[1]::y}% | &bZ: &r%{ctf::%{_list}%::%{_id}%::data::locations[1]::z}%>&8&l[ &b1 &8&l ] <reset> <ttp:&eX: &r%{ctf::%{_list}%::%{_id}%::data::locations[C]::x}% | &eY: &r%{ctf::%{_list}%::%{_id}%::data::locations[C]::y}% | &eZ: &r%{ctf::%{_list}%::%{_id}%::data::locations[C]::z}% | &eYaw: &r%{ctf::%{_list}%::%{_id}%::data::locations[C]::yaw}% | &eP: &r%{ctf::%{_list}%::%{_id}%::data::locations[C]::pitch}%>&8&l[ &e₪ &8&l ] <reset> <ttp:&cX: &r%{ctf::%{_list}%::%{_id}%::data::locations[2]::x}% | &cY: &r%{ctf::%{_list}%::%{_id}%::data::locations[2]::y}% | &cZ: &r%{ctf::%{_list}%::%{_id}%::data::locations[2]::z}%>&8&l[ &c2 &8&l ] <reset>" to {_s}
+                {ctf::%{_list}%::%{_id}%::data::flags::*} is set:
+                    send formatted "&l&6 » &r Flags: <ttp:&e&lSet up flags %nl%&r%{ctf::%{_list}%::%{_id}%::data::flags::*}%>&8&l[ &a◾&8&l ] <reset>" to {_s}
+
+
+
+
             ws( {_s} )
     set {_back} to "ctfadmin mapedit list"
-    {@back}
+    {@footer_list}
 
 
 
