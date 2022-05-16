@@ -6,16 +6,48 @@ options:
     title: send titleCenter( "&e.ιl&blιl&2lι. &r&lCapture the &3Flag &e.ιl&blιl&2lι.")
     back:   send formatted "<ttp:&cBack><cmd:/%{_back}%>&8&l[ &e≺&8&l ]" to {_s}
     status: "&cDisabled"
+    ExpectedResponses: 3
 # client side options
 # vars
+    [i]expand-x: 30
+    [i]expand-y: 60
+    [i]expand-z: 30
+    [i]max_players: 14
+
 # to run funcs
     status[ttp]: "&eClick&7 for choose this status"
     status[Running]: <ttp:%{_ttp}%><cmd:/1100111>
     status[No-Running]: <ttp:%{_ttp}%><cmd:/1100112>
     status[Preparing]: <ttp:%{_ttp}%><cmd:/1100113>
     status[Deactived]: <ttp:%{_ttp}%><cmd:/1100114>
+
+    Size[1]: <ttp:%{_Sizettp1}%><cmd:/1100211>
+    Size[2]: <ttp:%{_Sizettp2}%><cmd:/1100212>
+    Size[3]: <ttp:%{_Sizettp3}%><cmd:/1100213>
+    ttp[Size1]: "%nl% &7&lSize of &c&lSmall&7&l Arena %nl%&l&6 » &rX: &c%{ctf::core::sizes::small::x}% %nl%&l&6 » &rY: &c%{ctf::core::sizes::small::y}% %nl%&l&6 » &rZ: &c%{ctf::core::sizes::small::z}% %nl%&l&6 » &rMaxPlayers: &c%{ctf::core::sizes::small::players}%%nl%"
+    ttp[Size2]: "%nl% &7&lSize of &e&lMedium&7&l Arena %nl%&l&6 » &rX: &e%{ctf::core::sizes::middle::x}% %nl%&l&6 » &rY: &e%{ctf::core::sizes::middle::y}% %nl%&l&6 » &rZ: &e%{ctf::core::sizes::middle::z}% %nl%&l&6 » &rMaxPlayers: &e%{ctf::core::sizes::middle::players}%%nl%"
+    ttp[Size3]: "%nl% &7&lSize of &a&lBig&7&l Arena %nl%&l&6 » &rX: &a%{ctf::core::sizes::big::x}% %nl%&l&6 » &rY: &a%{ctf::core::sizes::big::y}% %nl%&l&6 » &rZ: &a%{ctf::core::sizes::big::z}% %nl%&l&6 » &rMaxPlayers: &a%{ctf::core::sizes::big::players}%%nl%"
 # design
 
+function setSize(s: sender, size: integer):
+    {_size} is 1:
+        set {ctf::core::sizes::small::x} to (({@[i]expand-x} / 2) / 2)
+        set {ctf::core::sizes::small::y} to (({@[i]expand-y} / 2) / 2)
+        set {ctf::core::sizes::small::z} to (({@[i]expand-z} / 2) / 2)
+        set {ctf::core::sizes::small::players} to 4
+        make {_s} say "small"
+    else if {_size} is 2:
+        set {ctf::core::sizes::middle::x} to ({@[i]expand-x} / 2)
+        set {ctf::core::sizes::middle::y} to ({@[i]expand-y} / 2)
+        set {ctf::core::sizes::middle::z} to ({@[i]expand-z} / 2)
+        set {ctf::core::sizes::middle::players} to ({@[i]max_players} / 2)
+        make {_s} say "middle"
+    else if {_size} is 3:
+        set {ctf::core::sizes::big::x} to {@[i]expand-x}
+        set {ctf::core::sizes::big::y} to {@[i]expand-y}
+        set {ctf::core::sizes::big::z} to {@[i]expand-z}
+        set {ctf::core::sizes::big::players} to {@[i]max_players}
+        make {_s} say "big"
 
 on command:
     command = "1100111":
@@ -30,6 +62,16 @@ on command:
     else if command = "1100114":
         cancel event
         statusType(sender, 4)
+
+    else if command = "1100211":
+        cancel event
+        setSize( sender , 1 )
+    else if command = "1100212":
+        cancel event
+        setSize( sender , 2 )
+    else if command = "1100213":
+        cancel event
+        setSize( sender , 3 )
 
 
 function statusType(s: sender, type: integer = 1):
@@ -49,7 +91,7 @@ function statusType(s: sender, type: integer = 1):
 
 function ws(s: sender):
     send "" to {_s}
-
+ 
 on load:
     #delete {ctf::instance::*}
     {ctf::help::commands::*} is not set:
@@ -81,6 +123,7 @@ function ClearChat(s: sender):
 
 function addInstance(s: sender, list: object, c: sender):
     set {count::i} to 0
+    set {count::k} to 0
     set {rsp} to "none"
     ClearChat( {_s} )
     send centeredText( "&7&lInsert the &ename&7 of Instance", 154 ) to {_s}
@@ -92,11 +135,11 @@ function addInstance(s: sender, list: object, c: sender):
         while {onChat::%{_s}'s uuid%} is "active":
             wait 15 ticks
             set {_k} to size of {response::%{_s}'s uuid%::messages::*}
-            send {_k} to {_c}
+            send "%{@dt}%&7 Constant of K: %{_k}%" to {_c} if {@debug} = 1
             if {rsp} is "exist":
                 set {onChat::%{_s}'s uuid%} to "deactived"
                 stop
-            if {_k} < 2:
+            if {_k} < {@ExpectedResponses}:
                 set {onChat::%{_s}'s uuid%} to "active"
             {_k} = 1:
                 {count::i} = 0:
@@ -128,9 +171,30 @@ function addInstance(s: sender, list: object, c: sender):
                         ws( {_s} )
                         set {rsp} to "exist"
             {_k} = 2:
-                send "%{@dt}%&r Status" to {_c} if {@debug} = 1
-                set {ctf::%{_list}%::%{_n}%::data::status} to {response::%{_s}'s uuid%::messages::2}
-   
+                {count::k} = 0:
+                    set {_Sizettp1} to {@ttp[Size1]}
+                    set {_Sizettp2} to {@ttp[Size2]}
+                    set {_Sizettp3} to {@ttp[Size3]}
+                    send "%{@dt}%&r Registred Status" to {_c} if {@debug} = 1
+                    add 1 to {count::k}
+                    set {ctf::%{_list}%::%{_n}%::data::status} to {response::%{_s}'s uuid%::messages::2}
+                    ws( {_s} )
+                    send centeredText( "&7&lChoose &eSize&7 of Instance &b%{response::%{_s}'s uuid%::messages::1}%", 154 ) to {_s}
+                    ws( {_s} )
+                    send formatted "                     {@Size[1]}&8&l[&c Small &8&l]<reset> {@Size[2]}&8&l[&e Middle &8&l]<reset> {@Size[3]}&8&l[&a Big &8&l]<reset>" to {_s}
+                    ws( {_s} )
+            {_k} = 3:
+                wait 1 seconds
+                ClearChat( {_s} )
+                send centeredText( "&7&lInstance &e%{response::%{_s}'s uuid%::messages::1}%&7 with status %{response::%{_s}'s uuid%::messages::2}%&7 was &aCreated!", 169 ) to {_s}
+                broadcast {response::%{_s}'s uuid%::messages::3}
+                loop {ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::*}:
+                    broadcast "%loop-index% as %loop-value%"
+                ws( {_s} )
+                ws( {_s} )
+
+
+
   
             
 
@@ -216,7 +280,7 @@ function IAmenu(s: sender, c: sender = "", value-1: string, value-2: string="", 
                 send centeredText( "&8&l( &o&eMapedit &8&l)", 154 ) to {_s}
                 ws( {_s} )
                 send formatted "<ttp:&6List&7 of instance's><cmd:/ctfadmin mapedit list>&8&l» &eMap List" to {_s} 
-                send formatted "<ttp:&aCreate&7 new instance of map><cmd:/.>&8&l» &eAdd Map" to {_s} 
+                send formatted "<ttp:&aCreate&7 new instance of map><cmd:/ctfadmin mapedit add>&8&l» &eAdd Map" to {_s} 
                 send formatted "<ttp:&7Map &binformation><cmd:/.>&8&l» &eMap info" to {_s} 
                 send formatted "<ttp:&7Map &eDetail><cmd:/.>&8&l» &eMap detail" to {_s} 
                 ws( {_s} )
