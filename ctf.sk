@@ -1,6 +1,6 @@
 options:
 # server side options
-    debug: 1
+    debug: 0
     dt: "&8[&c*&8]&r"
     tag: "&b &lCTF &r"
     title: send titleCenter( "&e.ιl&blιl&2lι. &r&lCapture the &3Flag &e.ιl&blιl&2lι.")
@@ -11,9 +11,9 @@ options:
 # client side options
 # vars
     [i]expand-x: 30
-    [i]expand-y: 60
-    [i]expand-z: 30
-    [i]max_players: 14
+    [i]expand-y: 30
+    [i]expand-z: 60
+    [i]max_players: 15
 
 # to run funcs
     status[ttp]: "&eClick&7 for choose this status"
@@ -131,6 +131,69 @@ function getLocation(s: sender):
     set {loc::[world]} to {_s}'s world
     set {loc::[biome]} to {_s}'s biome
 
+function getVector(lp: string, list: string, n: integer, s: sender, world: object, c: sender):
+    {_lp} is "L1":
+        send "%{@dt}%&r L1" to {_s} if {@debug} = 1
+        set {ctf::%{_list}%::%{_n}%::data::locations[1]::x} to ({loc::[x]} + {ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::x})  
+        set {ctf::%{_list}%::%{_n}%::data::locations[1]::y} to {loc::[y]}
+        set {ctf::%{_list}%::%{_n}%::data::locations[1]::z} to ({loc::[z]} -  {ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::z})
+        send "%{@dt}%&e L1 - %{ctf::%{_list}%::%{_n}%::data::locations[1]::*}%" to {_s} if {@debug} = 1
+    else if {_lp} is "L2":
+        send "%{@dt}%&r L2" to {_s} if {@debug} = 1
+        set {_world} to {loc::[world]}
+        set {ctf::%{_list}%::%{_n}%::data::locations[2]::x} to ({loc::[x]} - {ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::x})  
+        set {ctf::%{_list}%::%{_n}%::data::locations[2]::y} to ({loc::[y]} + {ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::y} + 5)
+        set {ctf::%{_list}%::%{_n}%::data::locations[2]::z} to ({loc::[z]} +  {ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::z})
+        send "%{@dt}%&c L2 - %{ctf::%{_list}%::%{_n}%::data::locations[2]::*}%" to {_s} if {@debug} = 1 
+    else if {_lp} is "LC":
+        send "%{@dt}%&r LC" to {_s} if {@debug} = 1
+        set {ctf::%{_list}%::%{_n}%::data::locations[C]::x} to {loc::[x]} 
+        set {ctf::%{_list}%::%{_n}%::data::locations[C]::y} to (55 * {ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::y} / 100) + {loc::[y]} #fill
+        set {ctf::%{_list}%::%{_n}%::data::locations[C]::z} to {loc::[z]}                
+        set {ctf::%{_list}%::%{_n}%::data::locations[C]::yaw} to {loc::[yaw]}
+        set {ctf::%{_list}%::%{_n}%::data::locations[C]::pitch} to {loc::[pitch]}
+        send "%{@dt}%&b LC - %{ctf::%{_list}%::%{_n}%::data::locations[C]::*}%" to {_s} if {@debug} = 1
+    else if {_lp} is "floor":
+        set {_l1} to location({ctf::%{_list}%::%{_n}%::data::locations[1]::x}, {loc::[y]}, {ctf::%{_list}%::%{_n}%::data::locations[1]::z}, {_world})
+        set {_l2} to location({ctf::%{_list}%::%{_n}%::data::locations[2]::x}, {loc::[y]}, {ctf::%{_list}%::%{_n}%::data::locations[2]::z}, {_world})
+        make {_s} execute command "/ctfadmin mapedit %{_n}%"
+        set all blocks within block at {_l1} and block at {_l2} to bedrock
+    else if {_lp} is "walls":
+        if {@debug} = 1:
+            set {_tempBlock1} to red wool #1
+            set {_tempBlock2} to blue wool #2
+            set {_tempBlock3} to lime wool #3
+            set {_tempBlock4} to purple wool #4
+            set {_tempBlock} to bedrock
+        else:
+            set {_tempBlock1} to bedrock
+            set {_tempBlock2} to bedrock
+            set {_tempBlock3} to bedrock
+            set {_tempBlock4} to bedrock 
+        set {_l1} to location({ctf::%{_list}%::%{_n}%::data::locations[1]::x}, {loc::[y]}, {ctf::%{_list}%::%{_n}%::data::locations[1]::z}, {_world})
+        send "%{@dt}%&r The wall (1) RED" to {_c} if {@debug} = 1
+        set all blocks within block at {_l1} and block at location({ctf::%{_list}%::%{_n}%::data::locations[2]::x}, {ctf::%{_list}%::%{_n}%::data::locations[2]::y}, {ctf::%{_list}%::%{_n}%::data::locations[1]::z}, {_world}) to {_tempBlock1} # red wool
+        send "%{@dt}%&r The wall (2) BLUE" to {_c} if {@debug} = 1
+        set all blocks within block at {_l1} and block at location({ctf::%{_list}%::%{_n}%::data::locations[1]::x}, {ctf::%{_list}%::%{_n}%::data::locations[2]::y}, {ctf::%{_list}%::%{_n}%::data::locations[2]::z}, {_world}) to {_tempBlock2} # blue wool
+        send "%{@dt}%&r The wall (3) LIME" to {_c} if {@debug} = 1
+        set all blocks within block at location({ctf::%{_list}%::%{_n}%::data::locations[1]::x}, {loc::[y]}, {ctf::%{_list}%::%{_n}%::data::locations[1]::z} + ({ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::z} * 2), {_world}) and block at location({ctf::%{_list}%::%{_n}%::data::locations[2]::x}, {ctf::%{_list}%::%{_n}%::data::locations[2]::y}, {ctf::%{_list}%::%{_n}%::data::locations[2]::z} , {_world}) to {_tempBlock3} # lime wool
+        send "%{@dt}%&r The wall (4) PURPLE" to {_c} if {@debug} = 1
+        set all blocks within block at location({ctf::%{_list}%::%{_n}%::data::locations[1]::x} - ({ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::x} * 2), {loc::[y]}, {ctf::%{_list}%::%{_n}%::data::locations[1]::z},{_world}) and block at location({ctf::%{_list}%::%{_n}%::data::locations[1]::x} - ({ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::x} * 2), {ctf::%{_list}%::%{_n}%::data::locations[2]::y}, {ctf::%{_list}%::%{_n}%::data::locations[2]::z}, {_world}) to {_tempBlock4} # purple wool 
+    else if {_lp} is "fill":
+        set {_lC} to location({loc::[x]}, {ctf::%{_list}%::%{_n}%::data::locations[C]::y}, {loc::[z]}, {_world})
+        set all blocks within block at location(({ctf::%{_list}%::%{_n}%::data::locations[1]::x} - 1), {loc::[y]}, ({ctf::%{_list}%::%{_n}%::data::locations[1]::z} + 1), {_world}) and block at location(({ctf::%{_list}%::%{_n}%::data::locations[2]::x} + 1), {ctf::%{_list}%::%{_n}%::data::locations[C]::y}, ({ctf::%{_list}%::%{_n}%::data::locations[2]::z} - 1), {_world}) to dirt
+        set block at {_lC} to gold block
+    else if {_lp} is "region":
+        make {_c} execute command "//world %{_world}%"
+        make {_c} execute command "//pos1 %round({ctf::%{_list}%::%{_n}%::data::locations[1]::x})%,%round({loc::[y]})%,%round({ctf::%{_list}%::%{_n}%::data::locations[1]::z})%"
+        make {_c} execute command "//pos2 %round({ctf::%{_list}%::%{_n}%::data::locations[2]::x})%,%round({ctf::%{_list}%::%{_n}%::data::locations[2]::y})%,%round({ctf::%{_list}%::%{_n}%::data::locations[2]::z})%"
+        make {_c} execute command "/rg create ctf_%{response::%{_s}'s uuid%::messages::1}%"
+        wait 1 seconds
+        make {_c} execute command "/rg flag ctf_%{response::%{_s}'s uuid%::messages::1}% pvp deny"
+        make {_c} execute command "/rg flag ctf_%{response::%{_s}'s uuid%::messages::1}% block-break deny"
+        
+
+
 function addInstance(s: sender, list: object, c: sender):
     set {count::i} to 0
     set {count::k} to 0
@@ -204,78 +267,56 @@ function addInstance(s: sender, list: object, c: sender):
                 ws( {_s} )
                 ws( {_s} )
                 getLocation( {_s} )
-                set {ctf::%{_list}%::%{_n}%::data::players::max} to {ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::players}
-                # L1
-                set {ctf::%{_list}%::%{_n}%::data::locations[1]::x} to ({loc::[x]} + {ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::x})  
-                set {ctf::%{_list}%::%{_n}%::data::locations[1]::y} to {loc::[y]}
-                set {ctf::%{_list}%::%{_n}%::data::locations[1]::z} to ({loc::[z]} -  {ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::z})
-                # Center
-                set {ctf::%{_list}%::%{_n}%::data::locations[C]::x} to {loc::[x]} 
-                set {ctf::%{_list}%::%{_n}%::data::locations[C]::y} to ((55 * {ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::z} / 100) + {loc::[y]})
-                set {ctf::%{_list}%::%{_n}%::data::locations[C]::z} to {loc::[z]}                
-                set {ctf::%{_list}%::%{_n}%::data::locations[C]::yaw} to {loc::[yaw]}
-                set {ctf::%{_list}%::%{_n}%::data::locations[C]::pitch} to {loc::[pitch]} 
-                # L2
-                set {ctf::%{_list}%::%{_n}%::data::locations[2]::x} to ({loc::[x]} - {ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::x})  
-                set {ctf::%{_list}%::%{_n}%::data::locations[2]::y} to ({loc::[y]} + {ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::y} + 5)
-                set {ctf::%{_list}%::%{_n}%::data::locations[2]::z} to ({loc::[z]} +  {ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::z}) 
-                if {@debug} = 1:
-                    set {_tempBlock1} to red wool #1
-                    set {_tempBlock2} to blue wool #2
-                    set {_tempBlock3} to lime wool #3
-                    set {_tempBlock4} to purple wool #4
-                    set {_tempBlock} to bedrock
-                else:
-                    set {_tempBlock1} to bedrock
-                    set {_tempBlock2} to bedrock
-                    set {_tempBlock3} to bedrock
-                    set {_tempBlock4} to bedrock 
-                    set {_tempBlock} to bedrock      
                 add "%nl%%nl%&cPvP &8[&coff&8]&0" to {ctf::%{_list}%::%{_n}%::data::flags::*}
                 add "%nl%&7Destroy &8[&aon&8]&0" to {ctf::%{_list}%::%{_n}%::data::flags::*}
                 add "%nl%&7Building &8[&coff&8]&0" to {ctf::%{_list}%::%{_n}%::data::flags::*}
                 add "%nl%&7Teleport &8[&aon&8]&0%nl%" to {ctf::%{_list}%::%{_n}%::data::flags::*}
-                set {ctf::%{_list}%::%{_n}%::data::players::current} to 0          
-                make {_s} execute command "/ctfadmin mapedit %{_n}%"
-                send "%{@dt}%&r The flor Building..." to {_c} if {@debug} = 1
                 set {_world} to {loc::[world]}
-                set {_l1} to location({ctf::%{_list}%::%{_n}%::data::locations[1]::x}, {loc::[y]}, {ctf::%{_list}%::%{_n}%::data::locations[1]::z}, {_world})
-                set {_l2} to location({ctf::%{_list}%::%{_n}%::data::locations[2]::x}, {loc::[y]}, {ctf::%{_list}%::%{_n}%::data::locations[2]::z}, {_world})
-                set all blocks within block at {_l1} and block at {_l2} to {_tempBlock}
-                send "%{@dt}%&r The wall (1) RED" to {_c} if {@debug} = 1
-                set all blocks within block at {_l1} and block at location({ctf::%{_list}%::%{_n}%::data::locations[2]::x}, {ctf::%{_list}%::%{_n}%::data::locations[C]::y}, {ctf::%{_list}%::%{_n}%::data::locations[1]::z}, {_world}) to {_tempBlock1} # red wool
-                send "%{@dt}%&r The wall (2) BLUE" to {_c} if {@debug} = 1
-                set all blocks within block at {_l1} and block at location({ctf::%{_list}%::%{_n}%::data::locations[1]::x}, {ctf::%{_list}%::%{_n}%::data::locations[C]::y}, {ctf::%{_list}%::%{_n}%::data::locations[2]::z}, {_world}) to {_tempBlock2} # blue wool
-                send "%{@dt}%&r The wall (3) LIME" to {_c} if {@debug} = 1
-                set all blocks within block at location({ctf::%{_list}%::%{_n}%::data::locations[1]::x}, {loc::[y]}, {ctf::%{_list}%::%{_n}%::data::locations[1]::z} + ({ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::z} * 2), {_world}) and block at location({ctf::%{_list}%::%{_n}%::data::locations[2]::x}, {ctf::%{_list}%::%{_n}%::data::locations[C]::y}, {ctf::%{_list}%::%{_n}%::data::locations[2]::z} , {_world}) to {_tempBlock3} # lime wool
-                send "%{@dt}%&r The wall (4) PURPLE" to {_c} if {@debug} = 1
-                set all blocks within block at location({ctf::%{_list}%::%{_n}%::data::locations[1]::x} - ({ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::x} * 2), {loc::[y]}, {ctf::%{_list}%::%{_n}%::data::locations[1]::z},{_world}) and block at location({ctf::%{_list}%::%{_n}%::data::locations[1]::x} - ({ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::x} * 2), {ctf::%{_list}%::%{_n}%::data::locations[C]::y}, {ctf::%{_list}%::%{_n}%::data::locations[2]::z}, {_world}) to {_tempBlock4} # purple wool 
+                set {ctf::%{_list}%::%{_n}%::data::players::current} to 0    
+                set {ctf::%{_list}%::%{_n}%::data::players::max} to {ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::players}
+                # L1
+                getVector("L1", {_list}, {_n}, {_s}, {_world}, {_c})
+                # Center
+                getVector("LC", {_list}, {_n}, {_s}, {_world}, {_c})
+                # L2
+                getVector("L2", {_list}, {_n}, {_s}, {_world}, {_c})
+                # floor
+                getVector("floor", {_list}, {_n}, {_s}, {_world}, {_c})
+                # walls
+                getVector("walls", {_list}, {_n}, {_s}, {_world}, {_c})
+                # Fill
+                getVector("fill", {_list}, {_n}, {_s}, {_world}, {_c})
                 # Fill -Size 1X-E | y | 1Z+E / 2X+E | Ywall | 2Z-E
                 # +Size 1X+E | y | 1Z-E / 2X-E | Ywall | 2Z+E
-                set {_lC} to location({loc::[x]}, {ctf::%{_list}%::%{_n}%::data::locations[C]::y}, {loc::[z]}, {_world})
-                set all blocks within block at location(({ctf::%{_list}%::%{_n}%::data::locations[1]::x} - 1), {loc::[y]}, ({ctf::%{_list}%::%{_n}%::data::locations[1]::z} + 1), {_world}) and block at location(({ctf::%{_list}%::%{_n}%::data::locations[2]::x} + 1), {ctf::%{_list}%::%{_n}%::data::locations[C]::y}, ({ctf::%{_list}%::%{_n}%::data::locations[2]::z} - 1), {_world}) to dirt
-                set block at {_lC} to gold block
-                teleport {_s} to location({loc::[x]}, ({ctf::%{_list}%::%{_n}%::data::locations[C]::y} + 2), {loc::[z]}, {_world})
-
-
-
-
-  
-            
-
-
-
-
-
-function removeInstance(s: sender, list: object, removeInstance: string):
+                getVector("region", {_list}, {_n}, {_s}, {_world}, {_c})
+                teleport {_s} to location({loc::[x]}, ({ctf::%{_list}%::%{_n}%::data::locations[C]::y} + 2), {loc::[z]}, {loc::[world]})
+function removeInstance(s: sender, list: object, removeInstance: string, world: object, c: sender):
     canAddInstance({ctf::%{_list}%::*}, {_removeInstance}) is false:
         set {_rtn} to true
     else:
         set {_rtn} to false
-
-    broadcast {_rtn}
     {_rtn} is true:
-        remove {_removeInstance} from {ctf::%{_list}%::*}
+        loop {ctf::%{_list}%::*}:
+            set {_rsp} to false 
+            {_removeInstance} is loop-value:
+                set {_rsp} to true
+            {_rsp} is true:
+                ws({_s})
+                send "%{@tag}%&7 The instance as name &b%{_removeInstance}% &7was &cDeleted!" to {_s} 
+                ws({_s})
+                set all blocks within block at location({ctf::%{_list}%::%loop-index%::data::locations[1]::x}, {ctf::%{_list}%::%loop-index%::data::locations[1]::y}, {ctf::%{_list}%::%loop-index%::data::locations[1]::z}, {_world}) and block at location({ctf::%{_list}%::%loop-index%::data::locations[2]::x}, {ctf::%{_list}%::%loop-index%::data::locations[2]::y} + 6, {ctf::%{_list}%::%loop-index%::data::locations[2]::z} + 2, {_world}) to air
+                wait 2 ticks
+                set all blocks within block at location({ctf::%{_list}%::%loop-index%::data::locations[1]::x}, {ctf::%{_list}%::%loop-index%::data::locations[1]::y}, {ctf::%{_list}%::%loop-index%::data::locations[1]::z}, {_world}) and block at location({ctf::%{_list}%::%loop-index%::data::locations[1]::x}, {ctf::%{_list}%::%loop-index%::data::locations[1]::y} + 1, {ctf::%{_list}%::%loop-index%::data::locations[1]::z}, {_world}) to grass block # Podlaha
+                make {_c} execute command "/rg remove ctf_%{_removeInstance}%"
+                wait 1.5 seconds
+                delete {ctf::%{_list}%::%loop-index%}
+                delete {ctf::%{_list}%::%loop-index%::*}
+                remove {_removeInstance} from {ctf::%{_list}%::*}
+                make {_s} execute command "/ctfadmin mapedit list"
+    else:
+        ws({_s})
+        send "%{@tag}%&7 The instance &b%{_removeInstance}% &7not &cexist!" to {_s} 
+        ws({_s})        
 
 function listInstance(s: sender, list: string):
     ws( {_s} )
@@ -315,15 +356,31 @@ function listInstanceInformation(s: sender, list: string, id: integer) :: boolea
                     send formatted "&l&6 » &r Cords: <ttp:&bX: &r%{ctf::%{_list}%::%{_id}%::data::locations[1]::x}% | &bY: &r%{ctf::%{_list}%::%{_id}%::data::locations[1]::y}% | &bZ: &r%{ctf::%{_list}%::%{_id}%::data::locations[1]::z}%>&8&l[ &b1 &8&l ] <reset> <ttp:&eX: &r%{ctf::%{_list}%::%{_id}%::data::locations[C]::x}% | &eY: &r%{ctf::%{_list}%::%{_id}%::data::locations[C]::y}% | &eZ: &r%{ctf::%{_list}%::%{_id}%::data::locations[C]::z}% | &eYaw: &r%{ctf::%{_list}%::%{_id}%::data::locations[C]::yaw}% | &eP: &r%{ctf::%{_list}%::%{_id}%::data::locations[C]::pitch}%>&8&l[ &e₪ &8&l ] <reset> <ttp:&cX: &r%{ctf::%{_list}%::%{_id}%::data::locations[2]::x}% | &cY: &r%{ctf::%{_list}%::%{_id}%::data::locations[2]::y}% | &cZ: &r%{ctf::%{_list}%::%{_id}%::data::locations[2]::z}%>&8&l[ &c2 &8&l ] <reset>" to {_s}
                 {ctf::%{_list}%::%{_id}%::data::flags::*} is set:
                     send formatted "&l&6 » &r Flags: <ttp:&e&lSet up flags %nl%&r%{ctf::%{_list}%::%{_id}%::data::flags::*}%>&8&l[ &a◾&8&l ] <reset>" to {_s}
-
-
-
-
             ws( {_s} )
     set {_back} to "ctfadmin mapedit list"
+    set {_teleport} to "ctfadmin mapedit teleport %{_newid}%"
+    set {_remove} to "ctfadmin mapedit remove %{ctf::%{_list}%::%{_id}%::data::name}%"
     {@footer_list}
 
+function infoInstance(s: sender, list: string, id: string, world: object):
+    ClearChat( {_s} )
+    {@title} to {_s}
+    send centeredText( "&8&l( &o&bMapInfo &8&l)", 154 ) to {_s}
+    ws( {_s} )
+    {ctf::%{_list}%::*} is not set:
+        send "&8&l» &7There are nothing to see! &cNo Instance's" to {_s}
+    else:
+        loop {ctf::%{_list}%::*}:
+            set {_loc} to location({ctf::%{_list}%::%loop-index%::data::locations[C]::x}, {ctf::%{_list}%::%loop-index%::data::locations[1]::y}, {ctf::%{_list}%::%loop-index%::data::locations[C]::z}, {_world})
+            set {_rg} to "%region at (block at {_loc})%"
 
+            set {ttp_%loop-value%} to "&aRegion: &7&o%{_rg}%%nl%&aPvP: &7&oNone"
+
+            send formatted "&8&l» <ttp:&7status of &binstance id &a%loop-index%%nl%%{ttp_%loop-value%}%>&e&o%loop-value%" to {_s}
+    ws( {_s} )
+    ws( {_s} )
+    set {_back} to "ctfadmin mapedit"
+    {@back}     
 
 function IAmenu(s: sender, c: sender = "", value-1: string, value-2: string="", value-3: object="none", value-4: string):
     {_value-1} is "admin":
@@ -359,8 +416,8 @@ function IAmenu(s: sender, c: sender = "", value-1: string, value-2: string="", 
                 ws( {_s} )
                 send formatted "<ttp:&6List&7 of instance's><cmd:/ctfadmin mapedit list>&8&l» &eMap List" to {_s} 
                 send formatted "<ttp:&aCreate&7 new instance of map><cmd:/ctfadmin mapedit add>&8&l» &eAdd Map" to {_s} 
-                send formatted "<ttp:&7Map &binformation><cmd:/.>&8&l» &eMap info" to {_s} 
-                send formatted "<ttp:&7Map &eDetail><cmd:/.>&8&l» &eMap detail" to {_s} 
+                send formatted "<ttp:&7Map &binformation><cmd:/ctfadmin mapedit info>&8&l» &eMap info" to {_s} 
+                send formatted "<ttp:&7Map &eDetail><cmd:/ctfadmin mapedit detail>&8&l» &eMap detail &8[&cUnavailable&8]" to {_s} 
                 ws( {_s} )
                 set {_back} to "ctfadmin"
                 {@back}
@@ -369,8 +426,10 @@ function IAmenu(s: sender, c: sender = "", value-1: string, value-2: string="", 
                 addInstance( {_s}, "instance", {_c})
 
             else if {_value-3} is "remove":
-                send "&8&lLOGIC&7 for remove" to {_s}
-                removeInstance( {_s}, "instance", {_value-4} )
+                removeInstance( {_s}, "instance", {_value-4}, {loc::[world]}, {_c} )
+            
+            else if {_value-3} is "info":
+                infoInstance({_s}, "instance", {_value-4}, {loc::[world]})
 
             else if {_value-3} is "list":
                 send "&8&lLOGIC&7 for list" to {_s}
@@ -379,6 +438,15 @@ function IAmenu(s: sender, c: sender = "", value-1: string, value-2: string="", 
             else if {_value-3} is "detail":
                 send "&8&lLOGIC&7 for detail" to {_s}
 
+            else if {_value-3} is "teleport":
+                loop {ctf::instance::*}:
+                    {_value-4} is loop-value:
+                        set {_list} to "instance"
+                        set {_loc} to location({ctf::%{_list}%::%loop-index%::data::locations[C]::x}, {ctf::%{_list}%::%loop-index%::data::locations[c]::y}, {ctf::%{_list}%::%loop-index%::data::locations[C]::z}, {loc::[world]})
+                        teleport {_s} to {_loc}
+                        send title "Teleported" with subtitle "to instance %loop-value% &e( %{ctf::%{_list}%::%loop-index%::data::locations[C]::x}% %{ctf::%{_list}%::%loop-index%::data::locations[C]::y}% %{ctf::%{_list}%::%loop-index%::data::locations[C]::z}% )" to {_s} with fade in 0.5 seconds and fade out 1.5 seconds
+
+                
             else if ({_value-3} parsed as integer) is integer:
                 listInstanceInformation( {_s}, "instance", ({_value-3} parsed as integer) )
 
