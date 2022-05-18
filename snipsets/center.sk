@@ -1,0 +1,24 @@
+import:
+  org.bukkit.map.MinecraftFont
+
+function getWidth(text: string) :: number:
+  set {_s::*} to {_text} split at "&l"
+  loop {_s::*}:
+    add (MinecraftFont.Font.getWidth(unformatted loop-value) + (size of (loop-value split at "")) - (size of loop-value split at " ")) to {_result} if mod(loop-index parsed as integer, 2) = 0
+    add MinecraftFont.Font.getWidth(unformatted loop-value) to {_result} if mod(loop-index parsed as integer, 2) = 1
+  return {_result}
+
+# 154 for chat, 127 for motd
+function centeredText(text: string, lenght: integer) :: string:
+  while {_compensated} ? 0 < ({_lenght} - (getWidth({_text}) / 2)):
+    set {_return} to "%{_return} ? ""%&r "
+    add (getWidth(" ") + 1) to {_compensated}
+  return "%{_return}%%{_text}%"
+
+
+function titleCenter(s: string) :: string:
+    if "%{_s}%" contains "ι":
+        replace all "ι" in {_s} with "i"
+        set {_c} to centeredText({_s}, 154)
+        replace all "i" in {_c} with "ι"    
+        return {_c}

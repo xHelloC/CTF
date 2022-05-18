@@ -1,0 +1,189 @@
+import:
+    org.bukkit.Bukkit
+    java.lang.Object
+    com.sk89q.worldguard.WorldGuard
+    com.sk89q.worldguard.protection.flags.Flags
+    com.sk89q.worldguard.protection.flags.Flag
+    com.sk89q.worldguard.protection.managers.RegionManager
+    com.sk89q.worldedit.util.Location as weLocation
+    com.sk89q.worldedit.bukkit.BukkitWorld
+    com.sk89q.worldguard.protection.regions.ProtectedRegion
+    com.sk89q.worldguard.protection.regions.RegionQuery
+    com.sk89q.worldedit.math.BlockVector3
+
+on load:
+    delete {wg.worlds::*}
+    clear {wg.worlds::*}
+    loop all worlds:
+        add loop-world to {wg.worlds::*}
+    if {WorldGuardPlugin} is not set:
+        set {WorldGuardPlugin} to Bukkit.getServer().getPluginManager().getPlugin("WorldGuard")
+        set {wg.newInstance} to WorldGuard.getInstance().getPlatform().getRegionContainer()
+        set {wg.query} to {wg.newInstance}.createQuery()
+
+effect get [a] flag %string% [value] from [region] %string% in [world] %string% [1¦[(2¦with response|without)]] [and] save [it] in %-object% for %player%:
+    trigger:
+        if parse mark is 1:
+            set {_parser} to 0
+        else:
+            set {_parser} to 1
+        if {wg.worlds::*} does not contain expr-3:
+            send "&cnewJavaError: 'Java.lang.NullPointerException:%{wg.newInstance}%' because world:'%expr-3%' not exist'" to expr-5
+            stop trigger
+        set {_world} to new BukkitWorld((expr-3 parsed as world))
+        set {_player} to {WorldGuardPlugin}.wrapPlayer(expr-5)
+        set {_w} to {wg.newInstance}.get({_world})
+        if {_w}.getRegion(expr-2) is not set:
+            send "&cnewJavaError: 'Java.lang.NullPointerException:%{_w}%' because region:'%expr-2%' not exist'" to expr-5
+            stop trigger
+        if {_w} is not set:
+            send "&cnewJavaError: '%the last java error%'" to expr-5
+        else:
+            set {_x} to {_w}.getRegion(expr-2).getMaximumPoint().getX()
+            set {_y} to {_w}.getRegion(expr-2).getMaximumPoint().getY()
+            set {_z} to {_w}.getRegion(expr-2).getMaximumPoint().getZ()
+            set {_region} to new weLocation({_world},{_x},{_y},{_z})
+            set raw expr-4 to wgFlag({_region}, {_player}, expr-1)
+            if {_parser} = 1:
+                set {_rls} to "&aAllow" if wgFlag({_region}, {_player}, expr-1) is "true"
+                set {_rls} to "&cDeny" if wgFlag({_region}, {_player}, expr-1) is "false"
+                send "&7Flag[&e%expr-1%&7]: %{_rls}%" to expr-5
+
+
+
+function wgFlag(region: object, p: object, flagl: string) :: string:
+    set {_flag} to {_flagl} in uppercase
+    if {_flag} is "PASSTHROUGH":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.PASSTHROUGH)%"
+    else if {_flag} is "BUILD":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.BLOCK_PLACE)%"
+    else if {_flag} is "BLOCK-BREAK":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.BLOCK_BREAK)%"
+    else if {_flag} is "BLOCK-PLACE":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.BLOCK_PLACE)%"
+    else if {_flag} is "USE":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.USE)%"
+    else if {_flag} is "INTERACT":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.INTERACT)%"
+    else if {_flag} is "DAMAGE-ANIMALS":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.DAMAGE_ANIMALS)%"
+    else if {_flag} is "PVP":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.PVP)%"
+    else if {_flag} is "SLEEP":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.SLEEP)%"
+    else if {_flag} is "RESPAWN-ANCHORS":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.RESPAWN_ANCHORS)%"
+    else if {_flag} is "TNT":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.TNT)%"
+    else if {_flag} is "CHEST-ACCESS":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.CHEST_ACCESS)%"
+    else if {_flag} is "PLACE-VEHICLE":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.PLACE_VEHICLE)%"
+    else if {_flag} is "DESTROY-VEHICLE":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.DESTROY_VEHICLE)%"
+    else if {_flag} is "LIGHTER":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.LIGHTER)%"
+    else if {_flag} is "RIDE":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.RIDE)%"
+    else if {_flag} is "POTION-SPLASH":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.POTION_SPLASH)%"
+    else if {_flag} is "ITEM-FRAME-ROTATE":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.ITEM_FRAME_ROTATE)%"
+    else if {_flag} is "TRAMPLE-BLOCKS":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.TRAMPLE_BLOCKS)%"
+    else if {_flag} is "FIREWORK-DAMAGE":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.FIREWORK_DAMAGE)%"
+    else if {_flag} is "USE-ANVIL":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.USE_ANVIL)%"
+    else if {_flag} is "USE-DRIPLEAF":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.USE_DRIPLEAF)%"
+    else if {_flag} is "ITEM-PICKUP":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.ITEM_PICKUP)%"
+    else if {_flag} is "ITEM-DROP":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.ITEM_DROP)%"
+    else if {_flag} is "EXP-DROPS":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.EXP_DROPS)%"
+    else if {_flag} is "MOB-DAMAGE":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.MOB_DAMAGE)%"
+    else if {_flag} is "CREEPER-EXPLOSION":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.CREEPER_EXPLOSION)%"
+    else if {_flag} is "ENDERDRAGON-BLOCK-DAMAGE":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.ENDERDRAGON_BLOCK_DAMAGE)%"
+    else if {_flag} is "GHAST-FIREBALL":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.GHAST_FIREBALL)%"
+    else if {_flag} is "OTHER-EXPLOSION":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.OTHER_EXPLOSION)%"
+    else if {_flag} is "ENDER-BUILD":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.ENDER_BUILD)%"
+    else if {_flag} is "SNOWMAN-TRAILS":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.SNOWMAN_TRAILS)%"
+    else if {_flag} is "RAVAGER-RAVAGE":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.RAVAGER_RAVAGE)%"
+    else if {_flag} is "ENTITY-PAINTING-DESTROY":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.ENTITY_PAINTING_DESTROY)%"
+    else if {_flag} is "ENTITY-ITEM-FRAME-DESTROY":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.ENTITY_ITEM_FRAME_DESTROY)%"
+    else if {_flag} is "MOB-SPAWNING":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.MOB_SPAWNING)%"
+    else if {_flag} is "PISTONS":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.PISTONS)%"
+    else if {_flag} is "FIRE-SPREAD":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.FIRE_SPREAD)%"
+    else if {_flag} is "LAVA-FIRE":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.LAVA_FIRE)%"
+    else if {_flag} is "LIGHTNING":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.LIGHTNING)%"
+    else if {_flag} is "SNOW-FALL":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.SNOW_FALL)%"
+    else if {_flag} is "SNOW-MELT":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.SNOW_MELT)%"
+    else if {_flag} is "ICE-FORM":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.ICE_FORM)%"
+    else if {_flag} is "ICE-MELT":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.ICE_MELT)%"
+    else if {_flag} is "FROSTED-ICE-MELT":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.FROSTED_ICE_MELT)%"
+    else if {_flag} is "FROSTED-ICE-FORM":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.FROSTED_ICE_FORM)%"
+    else if {_flag} is "MUSHROOMS":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.MUSHROOMS)%"
+    else if {_flag} is "LEAF-DECAY":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.LEAF_DECAY)%"
+    else if {_flag} is "GRASS-SPREAD":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.GRASS_SPREAD)%"
+    else if {_flag} is "MYCELIUM-SPREAD":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.MYCELIUM_SPREAD)%"
+    else if {_flag} is "VINE-GROWTH":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.VINE_GROWTH)%"
+    else if {_flag} is "ROCK-GROWTH":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.ROCK_GROWTH)%"
+    else if {_flag} is "CROP-GROWTH":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.CROP_GROWTH)%"
+    else if {_flag} is "SOIL-DRY":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.SOIL_DRY)%"
+    else if {_flag} is "CORAL-FADE":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.CORAL_FADE)%"
+    else if {_flag} is "ATER-FLOW":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.WATER_FLOW)%"
+    else if {_flag} is "LAVA-FLOW":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.LAVA_FLOW)%"
+    else if {_flag} is "SEND-CHAT":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.SEND_CHAT)%"
+    else if {_flag} is "RECEIVE-CHAT":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.RECEIVE_CHAT)%"
+    else if {_flag} is "INVINCIBILITY":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.PISTONS)%"
+    else if {_flag} is "FALL-DAMAGE":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.FALL_DAMAGE)%"
+    else if {_flag} is "HEALTH-REGEN":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.HEALTH_REGEN)%"
+    else if {_flag} is "HUNGER-DRAIN":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.HUNGER_DRAIN)%"
+    else if {_flag} is "EXIT-VIA-TELEPORT":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.EXIT_VIA_TELEPORT)%"
+    else if {_flag} is "ENDERPEARL":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.ENDERPEARL)%"
+    else if {_flag} is "CHORUS-TELEPORT":
+        return "%{wg.query}.testState({_region}, {_player}, Flags.CHORUS_TELEPORT)%"     
+
+
