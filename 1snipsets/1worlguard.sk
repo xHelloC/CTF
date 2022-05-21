@@ -20,36 +20,38 @@ on load:
         set {WorldGuardPlugin} to Bukkit.getServer().getPluginManager().getPlugin("WorldGuard")
         set {wg.newInstance} to WorldGuard.getInstance().getPlatform().getRegionContainer()
         set {wg.query} to {wg.newInstance}.createQuery()
+        stop
 
-effect get [a] flag %string% [value] from [region] %string% in [world] %string% [1¦[(2¦with response|without)]] [and] save [it] in %-object% for %player%:
+
+effect get [a] flag %string% [value] from [region] %string% in [world] %string% [1¦[(2¦with response|without [response])]] [and] save [it] in %-object% for %player%:
     trigger:
-        if parse mark is 1:
-            set {_parser} to 0
-        else:
+        # the parse check
+        set {_parser} to 0
+        if parse mark != 1:
             set {_parser} to 1
+        # error handler
         if {wg.worlds::*} does not contain expr-3:
             send "&cnewJavaError: 'Java.lang.NullPointerException:%{wg.newInstance}%' because world:'%expr-3%' not exist'" to expr-5
             stop trigger
-        set {_world} to new BukkitWorld((expr-3 parsed as world))
-        set {_player} to {WorldGuardPlugin}.wrapPlayer(expr-5)
-        set {_w} to {wg.newInstance}.get({_world})
+
+        set {_world} to new BukkitWorld((expr-3 parsed as world)) # get Bukkit World
+        set {_player} to {WorldGuardPlugin}.wrapPlayer(expr-5) # get WrapperForPlayer - WorldEdit
+        set {_w} to {wg.newInstance}.get({_world}) # get Decrypted World - WorldGuard
+
+
+        # error handler
+        if {_w} is not set:
+            send "&cnewJavaError: '%the last java error%'" to expr-5
+            stop
         if {_w}.getRegion(expr-2) is not set:
             send "&cnewJavaError: 'Java.lang.NullPointerException:%{_w}%' because region:'%expr-2%' not exist'" to expr-5
             stop trigger
-        if {_w} is not set:
-            send "&cnewJavaError: '%the last java error%'" to expr-5
-        else:
-            set {_x} to {_w}.getRegion(expr-2).getMaximumPoint().getX()
-            set {_y} to {_w}.getRegion(expr-2).getMaximumPoint().getY()
-            set {_z} to {_w}.getRegion(expr-2).getMaximumPoint().getZ()
-            set {_region} to new weLocation({_world},{_x},{_y},{_z})
-            set raw expr-4 to wgFlag({_region}, {_player}, expr-1)
-            if {_parser} = 1:
-                set {_rls} to "&aAllow" if wgFlag({_region}, {_player}, expr-1) is "true"
-                set {_rls} to "&cDeny" if wgFlag({_region}, {_player}, expr-1) is "false"
-                send "&7Flag[&e%expr-1%&7]: %{_rls}%" to expr-5
-
-
+        set {_region} to new weLocation({_world},{_w}.getRegion(expr-2).getMaximumPoint().getX(),{_w}.getRegion(expr-2).getMaximumPoint().getY(),{_w}.getRegion(expr-2).getMaximumPoint().getZ())
+        set raw expr-4 to wgFlag({_region}, {_player}, expr-1)
+        if {_parser} = 1:
+            set {_rls} to "&aAllow" if wgFlag({_region}, {_player}, expr-1) is "true"
+            set {_rls} to "&cDeny" if wgFlag({_region}, {_player}, expr-1) is "false"
+            send "&7Flag[&e%expr-1%&7]: %{_rls}%" to expr-5
 
 function wgFlag(region: object, p: object, flagl: string) :: string:
     set {_flag} to {_flagl} in uppercase
@@ -163,7 +165,7 @@ function wgFlag(region: object, p: object, flagl: string) :: string:
         return "%{wg.query}.testState({_region}, {_player}, Flags.SOIL_DRY)%"
     else if {_flag} is "CORAL-FADE":
         return "%{wg.query}.testState({_region}, {_player}, Flags.CORAL_FADE)%"
-    else if {_flag} is "ATER-FLOW":
+    else if {_flag} is "WATER-FLOW":
         return "%{wg.query}.testState({_region}, {_player}, Flags.WATER_FLOW)%"
     else if {_flag} is "LAVA-FLOW":
         return "%{wg.query}.testState({_region}, {_player}, Flags.LAVA_FLOW)%"

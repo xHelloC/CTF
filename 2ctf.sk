@@ -10,9 +10,9 @@ options:
     ExpectedResponses: 3
     # client side options
     # vars
-    [i]expand-x: 30
-    [i]expand-y: 30
-    [i]expand-z: 60
+    [i]expand-x: 32
+    [i]expand-y: 39
+    [i]expand-z: 67
     [i]max_players: 15
     [i]flags: "pvp", "build", "use", "sleep", "tnt", "interact" and "damage-animals"
     [i]World: "event"
@@ -20,6 +20,7 @@ options:
     # to run funcs
     status[ttp]: "&eClick&7 for choose this status"
     status[Running]: <ttp:%{_ttp}%><cmd:/1100111>
+    sele-status: <ttp:%{_sls}%>
     status[No-Running]: <ttp:%{_ttp}%><cmd:/1100112>
     status[Preparing]: <ttp:%{_ttp}%><cmd:/1100113>
     status[Deactived]: <ttp:%{_ttp}%><cmd:/1100114>
@@ -32,69 +33,7 @@ options:
     ttp[Size3]: "%nl% &7&lSize of &a&lBig&7&l Arena %nl%&l&6 » &rX: &a%{ctf::core::sizes::big::x}% %nl%&l&6 » &rY: &a%{ctf::core::sizes::big::y}% %nl%&l&6 » &rZ: &a%{ctf::core::sizes::big::z}% %nl%&l&6 » &rMaxPlayers: &a%{ctf::core::sizes::big::players}%%nl%"
     # design
 
-function setSize(s: sender, size: integer):
-    {_size} is 1:
-        set {ctf::core::sizes::small::x} to (({@[i]expand-x} / 2) / 2)
-        set {ctf::core::sizes::small::y} to (({@[i]expand-y} / 2) / 2)
-        set {ctf::core::sizes::small::z} to (({@[i]expand-z} / 2) / 2)
-        set {ctf::core::sizes::small::players} to 4
-        make {_s} say "small"
-    else if {_size} is 2:
-        set {ctf::core::sizes::middle::x} to ({@[i]expand-x} / 2)
-        set {ctf::core::sizes::middle::y} to ({@[i]expand-y} / 2)
-        set {ctf::core::sizes::middle::z} to ({@[i]expand-z} / 2)
-        set {ctf::core::sizes::middle::players} to ({@[i]max_players} / 2)
-        make {_s} say "middle"
-    else if {_size} is 3:
-        set {ctf::core::sizes::big::x} to {@[i]expand-x}
-        set {ctf::core::sizes::big::y} to {@[i]expand-y}
-        set {ctf::core::sizes::big::z} to {@[i]expand-z}
-        set {ctf::core::sizes::big::players} to {@[i]max_players}
-        make {_s} say "big"
 
-on command:
-    command = "1100111":
-        cancel event
-        statusType(sender, 1)
-    else if command = "1100112":
-        cancel event
-        statusType(sender, 2)
-    else if command = "1100113":
-        cancel event
-        statusType(sender, 3)
-    else if command = "1100114":
-        cancel event
-        statusType(sender, 4)
-
-    else if command = "1100211":
-        cancel event
-        setSize( sender , 1 )
-    else if command = "1100212":
-        cancel event
-        setSize( sender , 2 )
-    else if command = "1100213":
-        cancel event
-        setSize( sender , 3 )
-
-
-function statusType(s: sender, type: integer = 1):
-    {_type} is 1:
-        make {_s} say "&aRunning"
-    else if {_type} is 2:
-        make {_s} say "&cNo-Running"
-    else if {_type} is 3:
-        make {_s} say "&6Preparing"
-    else if {_type} is 4:
-        make {_s} say "&4Deactived"
-    else:
-        make {_s} say "&4Deactived"
-
-
-
-
-function ws(s: sender):
-    send "" to {_s}
- 
 on load:
     if {ctf::first_load} is not set:
         set {ctf::core::sizes::big::x} to {@[i]expand-x}
@@ -121,10 +60,120 @@ on load:
             send "%{@dt}%&r Help Subcommand already loaded!" to console if {@debug} = 1
 
             {ctf::help::desc::*} is not set:
-                add "<ttp:%{ctf::help::commands[sub]::2::*}%>This command contains with &f&oFunctions&7 of map edit<reset>", "<ttp:%{ctf::help::commands[sub]::3::*}%>This command contains with &fsetting for&7 Environments<reset>", "Will &fStart the event&7 and prepare for run.", "Will &fStop the event&7 and remove a data", "Will &fTeleport&7 all players with &fenabledTP&7.." to {ctf::help::desc::*}
+                add "<ttp:%{ctf::help::commands[sub]::2::*}%>This command contains with &f&oFunctions&7 of map edit<reset>", "<ttp:%{ctf::help::commands[sub]::3::*}%>This command contains with &fsetting for&7 Environments<reset>", "&fStart the event&7 and prepare for run.", "&cStop&7 the event and remove a data", "&fTeleport&7 all players with &fenabledTP&7.." to {ctf::help::desc::*}
 
 on unload:
     clear {ctf::help::commands::*}, {ctf::help::commands[sub]::*}, {ctf::help::desc::*}
+
+on join:
+    set {onChat::%player's uuid%} to "deactived"
+on command:
+    command = "1100111" or "1100112" or "1100113" or "1100114":
+        cancel event
+        set {_sqr[} to "&e&l["
+        set {_sqr]} to "&e&l]"
+        set {_sls} to "&cYou&7 already selected one!"       
+        command = "1100111":
+            broadcast "&aRunning was clicked"  if {@debug} = 1
+            loop 100 times:
+                send ""
+            statusType(sender, 1)
+            send formatted "    <ttp:&eYou&7 selected this &aRunning status!>&8&l%{_sqr[}%&a Running &8&l%{_sqr]}%&r {@sele-status}&8&l[&c No-Running &8&l]&r {@sele-status}&8&l[&6 Preparing &8&l]&r {@sele-status}&8&l[&4 Deactived &8&l]&r"
+            send "" to {_s}
+            stop
+        command = "1100112":
+            broadcast "&cNo-Running was clicked"  if {@debug} = 1
+            loop 100 times:
+                send ""
+            statusType(sender, 2)
+            send formatted "    {@sele-status}&8&l[&a Running &8&l]&r <ttp:&eYou&7 selected this &cNo-Running status!>&8&l%{_sqr[}%&c No-Running &8&l%{_sqr]}%&r {@sele-status}&8&l[&6 Preparing &8&l]&r {@sele-status}&8&l[&4 Deactived &8&l]&r"
+            send "" to {_s}
+            stop
+        command = "1100113":
+            broadcast "&6Preparing was clicked"  if {@debug} = 1
+            loop 100 times:
+                send ""
+            statusType(sender, 3)
+            send formatted "    {@sele-status}&8&l[&a Running &8&l]&r {@sele-status}&8&l[&c No-Running &8&l]&r <ttp:&eYou&7 selected this &6Preparing status!>&8&l%{_sqr[}%&6 Preparing &8&l%{_sqr]}%&r {@sele-status}&8&l[&4 Deactived &8&l]&r"
+            send "" to {_s}
+            stop
+        command = "1100114":
+            broadcast "&4Deactived was clicked" if {@debug} = 1
+            loop 100 times:
+                send ""   
+            statusType(sender, 4)
+            send formatted "    {@sele-status}&8&l[&a Running &8&l]&r {@sele-status}&8&l[&c No-Running &8&l]&r <ttp:&eYou&7 this &6Preparing status!>&8&l[&6 Preparing &8&l]&r <ttp:&eYou&7 selected this &4Deactived status!>&8&l%{_sqr[}%&4 Deactived &8&l%{_sqr]}%&r"
+            send "" to {_s}
+            stop
+    command = "1100211" or "1100212" or "1100213":
+        set {_Sizettp1} to {@ttp[Size1]}
+        set {_Sizettp2} to {@ttp[Size2]}
+        set {_Sizettp3} to {@ttp[Size3]}
+        cancel event
+        set {_sqr[} to "&e&l["
+        set {_sqr]} to "&e&l]"
+        set {_sls} to "&cYou&7 already selected one!"   
+        command = "1100211":
+            loop 100 times:
+                send ""              
+            send formatted "                  {@Size[1]}&8&l%{_sqr[}%&c Small &8&l%{_sqr]}%<reset> {@sele-status}&8&l[&e Middle &8&l]<reset> {@sele-status}&8&l[&a Big &8&l]<reset>" to player
+            ws(player)
+            setSize( sender , 1 )
+            stop
+        command = "1100212":
+            loop 100 times:
+                send ""              
+            send formatted "                  {@sele-status}&8&l[&c Small &8&l]<reset> {@Size[2]}&8&l%{_sqr[}%&e Middle &8&l%{_sqr]}%<reset> {@sele-status}&8&l[&a Big &8&l]<reset>" to player
+            ws(player)
+            setSize( sender , 2 )
+            stop
+        command = "1100213":
+            loop 100 times:
+                send ""   
+            send formatted "                  {@sele-status}&8&l[&c Small &8&l]<reset> {@sele-status}&8&l[&e Middle &8&l]<reset> {@Size[3]}&8&l%{_sqr[}%&a Big &8&l%{_sqr]}%<reset>" to player
+            ws(player)
+            setSize( sender , 3 )
+            stop
+
+function statusType(s: sender, type: integer = 1):
+    {_type} is 1:
+        make {_s} say "&aRunning"
+    else if {_type} is 2:
+        make {_s} say "&cNo-Running"
+    else if {_type} is 3:
+        make {_s} say "&6Preparing"
+    else if {_type} is 4:
+        make {_s} say "&4Deactived"
+    else:
+        make {_s} say "&4Deactived"
+
+
+
+
+function ws(s: sender):
+    send "" to {_s}
+function setSize(s: sender, size: integer):
+    {_size} is 1:
+        set {ctf::core::sizes::small::x} to (({@[i]expand-x} / 2) / 2)
+        set {ctf::core::sizes::small::y} to (({@[i]expand-y} / 2) / 2)
+        set {ctf::core::sizes::small::z} to (({@[i]expand-z} / 2) / 2)
+        set {ctf::core::sizes::small::players} to 4
+        make {_s} say "small"
+    else if {_size} is 2:
+        set {ctf::core::sizes::middle::x} to ({@[i]expand-x} / 2)
+        set {ctf::core::sizes::middle::y} to ({@[i]expand-y} / 2)
+        set {ctf::core::sizes::middle::z} to ({@[i]expand-z} / 2)
+        set {ctf::core::sizes::middle::players} to ({@[i]max_players} / 2)
+        make {_s} say "middle"
+    else if {_size} is 3:
+        set {ctf::core::sizes::big::x} to {@[i]expand-x}
+        set {ctf::core::sizes::big::y} to {@[i]expand-y}
+        set {ctf::core::sizes::big::z} to {@[i]expand-z}
+        set {ctf::core::sizes::big::players} to {@[i]max_players}
+        make {_s} say "big"
+
+
+
 
 function canAddInstance(list: objects, search: object) :: boolean:
     if {_search} is not set:
@@ -133,18 +182,6 @@ function canAddInstance(list: objects, search: object) :: boolean:
         if loop-value is {_search}:
             return false
     return true
-
-function getWgFlag(s: sender, id: string, flag: string, world: string) :: string:
-    set {_reg} to {_id} in lowercase
-    get flag {_flag} from region {_reg} in world {_world} and save in {_rtn} for {_s}
-    {_rtn} is "true":
-        return "&aallow"
-        stop
-    {_rtn} is "false":
-        return "&cdeny"
-        stop
-
-
 
 
 function ClearChat(s: sender):
@@ -262,7 +299,7 @@ function addInstance(s: sender, list: object, c: sender):
                         ws( {_s} )
                         send centeredText( "&7&lChoose &eStatus&7 for that Instance", 154 ) to {_s}
                         ws( {_s} )
-                        send formatted "    {@status[Running]}&8&l[&a Running &8&l]&r {@status[No-Running]}&8&l[&c No-Running &8&l]&r {@status[Preparing]}&8&l[&6 Preparing &8&l]&r {@status[Deactived]}&8&l[&4 Deactived &8&l]&r" to {_s}
+                        send formatted "    {@status[Running]}&8&l[&a Running &8&l]&r {@status[No-Running]}&8&l[&c No-Running &8&l]&r {@status[Preparing]}&8&l[&6 Preparing &8&l]&r {@status[Deactived]}&8&l[&4 Deactived &8&l]&r" to {_s}                      
                         ws( {_s} )
                     else:
                         ClearChat( {_s} )
@@ -283,7 +320,7 @@ function addInstance(s: sender, list: object, c: sender):
                     ws( {_s} )
                     send centeredText( "&7&lChoose &eSize&7 of Instance &b%{response::%{_s}'s uuid%::messages::1}%", 154 ) to {_s}
                     ws( {_s} )
-                    send formatted "                     {@Size[1]}&8&l[&c Small &8&l]<reset> {@Size[2]}&8&l[&e Middle &8&l]<reset> {@Size[3]}&8&l[&a Big &8&l]<reset>" to {_s}
+                    send formatted "                  {@Size[1]}&8&l[&c Small &8&l]<reset> {@Size[2]}&8&l[&e Middle &8&l]<reset> {@Size[3]}&8&l[&a Big &8&l]<reset>" to {_s}
                     ws( {_s} )
             {_k} = 3:
                 wait 1 seconds
@@ -295,14 +332,7 @@ function addInstance(s: sender, list: object, c: sender):
                         send "%{@dt}% %loop-index% as %loop-value%" to {_c}
                 ws( {_s} )
                 ws( {_s} )
-                getLocation( {_s} )
-
-                # add "%nl%%nl% &8[&coff&8]&0" to {ctf::%{_list}%::%{_n}%::data::flagsC::*}
-                # add "%nl%&7Destroy &8[&aon&8]&0" to {ctf::%{_list}%::%{_n}%::data::flagsC::*}
-                # add "%nl%&7Building &8[&coff&8]&0" to {ctf::%{_list}%::%{_n}%::data::flagsC::*}
-                # add "%nl%&7Teleport &8[&aon&8]&0%nl%" to {ctf::%{_list}%::%{_n}%::data::flagsC::*}
-
-                set {world} to {@[i]World}
+                getLocation( {_s} ) 
                 set {ctf::%{_list}%::%{_n}%::data::players::current} to 0    
                 set {ctf::%{_list}%::%{_n}%::data::players::max} to {ctf::core::sizes::%{response::%{_s}'s uuid%::messages::3}%::players}
                 broadcast "&c--&e--&b-- &7%{@[i]World}% &7%{world}% %{loc::[world]}%" if {@debug} = 1
@@ -318,14 +348,14 @@ function addInstance(s: sender, list: object, c: sender):
                 getVector("walls", {_list}, {_n}, {_s}, {@[i]World}, {_c})
                 # Fill
                 getVector("fill", {_list}, {_n}, {_s}, {@[i]World}, {_c})
+                teleport {_s} to location({loc::[x]}, ({ctf::%{_list}%::%{_n}%::data::locations[C]::y} + 2), {loc::[z]}, {world})
                 # Fill -Size 1X-E | y | 1Z+E / 2X+E | Ywall | 2Z-E
                 # +Size 1X+E | y | 1Z-E / 2X-E | Ywall | 2Z+E
                 getVector("region", {_list}, {_n}, {_s}, {@[i]World}, {_c})
-                loop {@[i]flags}:
-                    set {_fn} to getWgFlag({_s}, "ctf_%{response::%{_s}'s uuid%::messages::1}%", loop-value, "%{world}%")
-                    add "&7%loop-value%: %{_fn}%" to {ctf::%{_list}%::%{_n}%::data::flags::*}
+                wait 2 seconds
+                make {_c} execute command "/rg flag ctf_%{response::%{_s}'s uuid%::messages::1}% use allow"
+                make {_c} execute command "/rg flag ctf_%{response::%{_s}'s uuid%::messages::1}% tnt allow"
                 set {ctf::%{_list}%::%{_n}%::data::locations[C]::region} to "%region at block at (location({ctf::%{_list}%::%{_n}%::data::locations[C]::x}, {ctf::%{_list}%::%{_n}%::data::locations[1]::y}, {ctf::%{_list}%::%{_n}%::data::locations[C]::z}, {world}))%"
-                teleport {_s} to location({loc::[x]}, ({ctf::%{_list}%::%{_n}%::data::locations[C]::y} + 2), {loc::[z]}, {world})
 function removeInstance(s: sender, list: object, removeInstance: string, world: string, c: sender):
     canAddInstance({ctf::%{_list}%::*}, {_removeInstance}) is false:
         set {_rtn} to true
@@ -407,17 +437,165 @@ function infoInstance(s: sender, list: string, id: string, world: object):
         send "&8&l» &7There are nothing to see! &cNo Instance's" to {_s}
     else:
         delete {loc::*}, {_rg}, {ttp_::*}
+
         loop {ctf::%{_list}%::*}:
-            set {ttp_::%loop-value%} to "&aRegion: &7&o%{ctf::%{_list}%::%loop-index%::data::locations[C]::region}%%nl%%nl%%{ctf::%{_list}%::%loop-index%::data::flags::*}%"
+            loop {@[i]flags}:
+                set {_fn} to getWgFlag({_s}, "ctf_%{ctf::%{_list}%::%loop-index-1%}%", loop-value-2, "%{world}%")
+                add "&7%loop-value-2%: %{_fn}%" to {_flags::%loop-index-1%::*} 
+            set {ttp_::%loop-value-1%} to "&aRegion: &7&o%{ctf::%{_list}%::%loop-index-1%::data::locations[C]::region}%%nl%%nl%%{_flags::%loop-index-1%::*}%"
             send formatted "&8&l» <ttp:&7status of &binstance id &a%loop-index%%nl%%{ttp_::%loop-value%}%>&e&o%loop-value%" to {_s}
     ws( {_s} )
     ws( {_s} )
     set {_back} to "ctfadmin mapedit"
-    {@back}     
+    {@back}   
+function detailInstance(s: sender, list: string, id: string, world: object):
+    ClearChat( {_s} )
+    {@title} to {_s}
+    send centeredText( "&8&l( &o<##03fc77>Details of maps &8&l)", 154 ) to {_s}
+    ws( {_s} )
+    {ctf::%{_list}%::*} is not set:
+        send "&8&l» &7There are nothing to see! &cNo Instance's" to {_s}
+        ws( {_s} )
+        
+        set {_back} to "ctfadmin mapedit"
+        {@back}
+    else:
+        loop {ctf::%{_list}%::*}:
+            send formatted "&8&l» <ttp:&7Click for <##a5fc03>get&7 or <##fc032d>set &7details of &binstance id &a%loop-index%><cmd:/ctfadmin mapedit detail %loop-index%>[<##a5fc03> • &8]&r  &7&o%loop-value%" to {_s}
+        ws( {_s} )
+        ws( {_s} )
+        
+        set {_back} to "ctfadmin mapedit"
+        {@back}
 
+        if {_id} is set:
+            loop {ctf::%{_list}%::*}:
+                if loop-index is {_id}:
+                    # setter
+                    set {_biome::%loop-index%} to biome at location({ctf::%{_list}%::%loop-index%::data::locations[1]::x},{ctf::%{_list}%::%loop-index%::data::locations[1]::y},{ctf::%{_list}%::%loop-index%::data::locations[2]::z}, {_world})
+                    set {_max-X::%loop-index%} to {ctf::%{_list}%::%loop-index%::data::locations[1]::x}
+                    set {_max-Y::%loop-index%} to {ctf::%{_list}%::%loop-index%::data::locations[2]::y}
+                    set {_max-Z::%loop-index%} to {ctf::%{_list}%::%loop-index%::data::locations[2]::z}
+                    set {_lavaFlow::%loop-index%} to getWgFlag({_s}, "ctf_%loop-value%", "lava-flow", "%{world}%")
+                    set {_WaterFlow::%loop-index%} to getWgFlag({_s}, "ctf_%loop-value%", "water-flow", "%{world}%")
+                    if {ctf::instance::%{_id}%::data::blocks[1]::*} or {ctf::instance::%{_id}%::data::blocks[0]::*} or {ctf::instance::%{_id}%::data::blocks[temp]::*} is not set:
+                        getAmountAllBlocks( {_s}, {_id}, {_world}, 0 )
+                    if {ctf::instance::%{_id}%::data::blocks[1]::*} is not set:
+                        set {blocks[1]::%loop-index%} to "&cNone"
+                    else:
+                        set {blocks[1]::%loop-index%} to "&7%{ctf::instance::%{_id}%::data::blocks[1]::*}%"
+
+
+                    if {ctf::instance::%{_id}%::data::blocks[0]::*} is not set:
+                        set {blocks[0]::%loop-index%} to "&cNone"
+                    else:
+                        set {blocks[0]::%loop-index%} to "&7%{ctf::instance::%{_id}%::data::blocks[0]::*}%"
+
+                    set {_blockTTP::%loop-index%} to "<ttp:&bAll structures %nl%%nl%&dn-Type: %{blocks[0]::%loop-index%}%%nl%%nl%&aBlocks: %{ctf::instance::%{_id}%::data::blocks[temp]::*}%%nl%%nl%>"
+                    if {ctf::%{_list}%::%loop-index%::data::specials::*} is set:
+                        set {Specials::%loop-index%} to "&aYes"
+                    else:
+                        set {Specials::%loop-index%} to "&cNo"
+
+                    getTypeAllBlocks({_s}, loop-index parsed as integer, world "%{_world}%", 0)
+                    ClearChat( {_s} )
+                    {@title} to {_s}
+                    send centeredText( "&8&l( &o<##03fc77>Details of &e%loop-value% &8&l)", 154 ) to {_s}
+                    ws( {_s} )
+                    send formatted "&8&l» &7All structures: %{_blockTTP::%loop-index%}%&8&l[ &a🎲 &8&l]" to {_s}
+                    ws({_s}) 
+                    send formatted "&8&l» &7Geografic information: <ttp:&bGeografic information%nl%&7Biome: &e%{_biome::%loop-index%}%%nl%%nl%&7X-max: &c%{_max-X::%loop-index%}%%nl%&7Y-max: &c%{_max-Y::%loop-index%}%%nl%&7Z-max: &c%{_max-Z::%loop-index%}%%nl%%nl%&6Lava-flow: %{_lavaFlow::%loop-index%}%%nl%&bWater-flow: %{_WaterFlow::%loop-index%}%%nl%%nl%&7Specials: %{Specials::%loop-index%}%>&8&l[ 🪴 &8&l]" to {_s}
+                    ws({_s})
+
+                    send formatted "&8&l» &7Edit mode: <ttp:>&8&l[ &r 📝 &8&l]" to {_s}
+                    ws({_s})
+                    set {_back} to "ctfadmin mapedit detail"
+                    {@back} 
+
+function getWgFlag(s: sender, id: string, flag: string, world: string) :: string:
+    set {_reg} to {_id} in lowercase
+    get flag {_flag} from region {_reg} in world {_world} and save in {_rtn} for {_s}
+    {_rtn} is "true":
+        return "&aallow"
+        stop
+    {_rtn} is "false":
+        return "&cdeny"
+        stop
+#
+
+function getTypeAllBlocks(s: sender, id: integer, world: object, run: integer = 0):
+    {_run} = 0:
+        {ctf::instance::%{_id}%::data::blocks[0]::*} or {ctf::instance::%{_id}%::data::blocks[1]::*} or {ctf::instance::%{_id}%::data::blocks[temp]::*} is not set:
+            set {blocks::counter::temp} to 0
+            delete {-temp::blocks::*}
+            set {now} to now
+            set {_l1} to location({ctf::instance::%{_id}%::data::locations[1]::x}, {ctf::instance::%{_id}%::data::locations[C]::y}, {ctf::instance::%{_id}%::data::locations[1]::z},{_world})
+            set {_l2} to location({ctf::instance::%{_id}%::data::locations[2]::x}, {ctf::instance::%{_id}%::data::locations[2]::y}, {ctf::instance::%{_id}%::data::locations[2]::z}, {_world})
+            loop all blocks within block at {_l1} and block at {_l2}:
+                set {_} to {ctf::instance::%{_id}%::data::locations[2]::y}
+                if round(loop-block's y-coords) is not round({_}):
+                    if loop-block's type is not air:
+                        add 1 to {blocks::counter::temp}
+                        if {-temp::blocks::*} does not contain loop-block's type:
+                            #broadcast "&eTRYING TO ADD - &7> %loop-block's type%"
+                            add loop-block's type to {-temp::blocks::*}
+                else:
+                    create bossbar titled "&fProgress of &cgetting all blocks&f! for instance &b%{_id}%" and id "map.timer" for {_s} with progress 0 with colors white
+                    timeBlocks( {blocks::counter::temp}, difference between now and {now}, {_id}, {_s} )
+                    getAmountAllBlocks2({_s},{_id},{_world})
+                    #broadcast "&aFinished Stage1"
+                    stop loop
+        else:
+            message "you alredy have stt a blocks" to {_s}
+function getAmountAllBlocks2(s: sender, id: integer, world: object):
+    set {-counterBlocks} to 0
+    set {_ll1} to location({ctf::instance::%{_id}%::data::locations[1]::x}, {ctf::instance::%{_id}%::data::locations[C]::y}, {ctf::instance::%{_id}%::data::locations[1]::z},{_world})
+    set {_ll2} to location({ctf::instance::%{_id}%::data::locations[2]::x}, {ctf::instance::%{_id}%::data::locations[2]::y}, {ctf::instance::%{_id}%::data::locations[2]::z}, {_world})
+    loop all blocks within block at {_ll1} and block at {_ll2}:
+        set {__} to {ctf::instance::%{_id}%::data::locations[2]::y}
+        if round(loop-block's y-coords) is not round({__}):
+            if loop-block's type is not air:
+                if {-temp::blocks::*} contain loop-block's type:
+                    wait 1 tick
+                    add 1 to {-counterBlocks}
+                    set {testblock::counter::%loop-block's type%} to {testblock::counter::%loop-block's type%}  + 1
+                    set {_time} to difference between now and {now}
+                    send title "&cAdding a blocks &e[%{-counterBlocks}%]" with subtitle "&e%{_time}% &7%loop-block's type%  %loop-block's x-coords% %loop-block's y-coords% %loop-block's z-coords%" to {_s} with fade in 0 seconds and fade out 0 seconds
+                    add "%loop-block's type%" to {ctf::instance::%{_id}%::data::blocks[temp]::*}
+        else:            
+            broadcast "&aFinished stage2"
+            stop loop
+    
+function timeBlocks(o: integer, time: object, id: integer, s: sender):
+    set {_1} to (1 / 100 * {_o})
+    set {_100} to (100/100 * {_o})
+    loop {blocks::counter::temp} times:
+        wait 1 ticks
+        add 1 to {_progress}
+        remove 1 from {_100}
+        edit bossbar "map.timer"  progress to (({_progress}/{_1}))
+        #broadcast "&fMax: &c%({_100})%       &a%(({_progress}/{_1}))% %%"
+        (({_progress}/{_1})) = 100:
+            destroy bossbar "map.timer"
+            create bossbar titled "&aSuccess!! &fTime elapsed for instance &b%{_id}%&f is &e%{_time}%" and id "map.timer2" for {_s} with progress 100 with colors green
+            wait 1.5 seconds
+            destroy bossbar "map.timer2"
+
+#         
+function getAmountAllBlocks(s: sender, id: integer, world: object, run: integer):
+    if {_run} != 0:
+        loop {testblock::items::*}:
+            broadcast "&2Item &7[&e %loop-value% &7] : %{testblock::counter::%loop-value%}%"
+            if "%loop-value%" is "bedrock block" or "barrier":
+                add "%{testblock::counter::%loop-value%}% %loop-value%" to {ctf::instance::%{_id}%::data::blocks[0]::*}
+            else:
+                add "%{testblock::counter::%loop-value%}% %loop-value%" to {ctf::instance::%{_id}%::data::blocks[1]::*}
+            make {_s} execute command "/ctfadmin mapedit detail %{_id}%"
+
+
+#
 function IAmenu(s: sender, c: sender = "", value-1: string, value-2: string="", value-3: object="none", value-4: string):
-    set {_world} to {@[i]World} parsed as world
-    set {world} to {@[i]World} parsed as world
+    set {_world}, {world} to world {@[i]World} 
     {_value-1} is "admin":
         {_value-2} is not set:
             ClearChat( {_s} )
@@ -452,7 +630,7 @@ function IAmenu(s: sender, c: sender = "", value-1: string, value-2: string="", 
                 send formatted "<ttp:&6List&7 of instance's><cmd:/ctfadmin mapedit list>&8&l» &eMap List" to {_s} 
                 send formatted "<ttp:&aCreate&7 new instance of map><cmd:/ctfadmin mapedit add>&8&l» &eAdd Map" to {_s} 
                 send formatted "<ttp:&7Map &binformation><cmd:/ctfadmin mapedit info>&8&l» &eMap info" to {_s} 
-                send formatted "<ttp:&7Map &eDetail><cmd:/ctfadmin mapedit detail>&8&l» &eMap detail &8[&cUnavailable&8]" to {_s} 
+                send formatted "<ttp:&7Map &eDetail><cmd:/ctfadmin mapedit detail>&8&l» &eMap details" to {_s} 
                 ws( {_s} )
                 set {_back} to "ctfadmin"
                 {@back}
@@ -471,7 +649,7 @@ function IAmenu(s: sender, c: sender = "", value-1: string, value-2: string="", 
                 listInstance( {_s} , "instance")
 
             else if {_value-3} is "detail":
-                send "&8&lLOGIC&7 for detail" to {_s}
+                detailInstance({_s}, "instance", {_value-4}, {_world})
 
             else if {_value-3} is "teleport":
                 loop {ctf::instance::*}:
@@ -481,17 +659,10 @@ function IAmenu(s: sender, c: sender = "", value-1: string, value-2: string="", 
                         set {_loc} to location({ctf::%{_list}%::%loop-index%::data::locations[C]::x}, {_y}, {ctf::%{_list}%::%loop-index%::data::locations[C]::z},{world} )
                         teleport {_s} to {_loc}
                         send title "Teleported" with subtitle "to instance %loop-value% &e( %{ctf::%{_list}%::%loop-index%::data::locations[C]::x}% %{_y}% %{ctf::%{_list}%::%loop-index%::data::locations[C]::z}% %{@[i]World}%)" to {_s} with fade in 0.5 seconds and fade out 1.5 seconds
-
-                
             else if ({_value-3} parsed as integer) is integer:
                 listInstanceInformation( {_s}, "instance", ({_value-3} parsed as integer) )
-
             else:
                 send "%{@tag}% &cUncorrect usage!&7 Use &e/ctfadmin ?" to {_s} 
-
-
-
-
         else if {_value-2} is "items" or "food" or "ores":
             send "%{@dt}%&r Environments&7(&a%{_value-2}%&7)-Admin-IaMenu" to {_c} if {@debug} = 1
             ClearChat( {_s} )
@@ -525,16 +696,18 @@ function IAmenu(s: sender, c: sender = "", value-1: string, value-2: string="", 
         else:
             {_value-3} is not set:
                 send "%{@tag}% &cUncorrect usage!&7 Use &e/ctfadmin ?" to {_s}            
-
-
-        
     else if {_value-1} is "player":
         {@debug} = 1:
             send "%{@dt}% &rPlayer IaMenu" to {_c}
-    
     else:
         send "%{@tag}% &cUncorrect usage!" to {_s}
 
+on Chat:
+    {onChat::%sender's uuid%} is "active":
+        set {_s} to sender
+        cancel event
+        add message to {response::%{_s}'s uuid%::messages::*}
+        set {onChat::%{_s}'s uuid%} to "deactived"
 
 
 command focusproduction:capturetheflagadmin [<string>] [<text>] [<string>]:
@@ -547,17 +720,13 @@ command 222 [<string>]:
     trigger:
         if arg-1 is "reset":
             delete {ctf::instance::*}
+            delete {ctf::*}
         loop {ctf::instance::*}:
             send "%loop-index% as %loop-value%"
-on join:
-    set {onChat::%player's uuid%} to "deactived"
+            send "&c%{ctf::instance::1::data::blocks[temp]::*}%"
+            send "&a%{ctf::instance::1::data::blocks[1]::*}%"
+            send "&d%{ctf::instance::1::data::blocks[0]::*}%"
 
-on Chat:
-    {onChat::%sender's uuid%} is "active":
-        set {_s} to sender
-        cancel event
-        add message to {response::%{_s}'s uuid%::messages::*}
-        set {onChat::%{_s}'s uuid%} to "deactived"
 
 
 
@@ -642,12 +811,25 @@ on Chat:
 
 
 
-command focusproduction:capturetheflag [<string>] [<string>]:
-    aliases: ctf
-    trigger:
-        #IAmenu( player, console, "player" )
 
+# command focusproduction:capturetheflag [<string>] [<string>]:
+#     aliases: ctf
+#     trigger:
+#         #IAmenu( player, console, "player" )
 
+
+
+
+
+on tab complete for "/ctfadmin":
+    add "mapedit" and "" to {_comp::1::*}
+    add "add","list","info", "detail" to {_comp::2::*}
+
+    if {ctf::instance::*} is set:
+        loop {ctf::instance::*}:
+            add loop-index to {_comp::2::*}
+    set tab completions for position 1 to {_comp::1::*}
+    set tab completions for position 2 to {_comp::2::*} if tab arg-1 is "mapedit" 
 
 
 
